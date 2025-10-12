@@ -17,7 +17,10 @@ app.get('/api/test', (req, res) => {
         version: '1.0.0'
     });
 });
-
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 // Routes - con manejo de errores
 try {
     app.use('/api/auth', require('./routes/auth.routes'));

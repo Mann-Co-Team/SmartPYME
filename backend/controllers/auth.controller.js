@@ -4,6 +4,7 @@ const UsuarioModel = require('../models/usuario.model');
 class AuthController {
     // Login de usuario
     static async login(req, res) {
+    console.log('BODY RECIBIDO:', req.body);
         try {
             const { email, password } = req.body;
 
