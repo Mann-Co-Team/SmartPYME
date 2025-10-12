@@ -129,3 +129,28 @@ INSERT INTO usuarios (id_rol, nombre, apellido, email, password) VALUES
 INSERT INTO categorias (nombre, descripcion) VALUES
 ('Productos Generales', 'Categoría general para productos'),
 ('Servicios', 'Servicios ofrecidos por la empresa');
+
+-- Tabla de configuraciones/ajustes
+CREATE TABLE settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Añadir campo imagen a categorías (si no existe)
+ALTER TABLE categorias ADD COLUMN imagen VARCHAR(500) AFTER descripcion;
+
+-- Insertar configuraciones por defecto
+INSERT INTO settings (setting_key, setting_value, description) VALUES
+('company_name', 'Mi Empresa', 'Nombre de la empresa'),
+('theme_color', '#007bff', 'Color principal del tema'),
+('footer_text', 'Powered by SmartPYME', 'Texto del pie de página'),
+('company_phone', '', 'Teléfono de la empresa'),
+('company_email', '', 'Email de la empresa'),
+('company_address', '', 'Dirección de la empresa'),
+('delivery_enabled', 'true', 'Habilitar delivery'),
+('pickup_enabled', 'true', 'Habilitar retiro en tienda'),
+('min_order_amount', '0', 'Monto mínimo de pedido');

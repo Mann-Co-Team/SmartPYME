@@ -1,17 +1,17 @@
-const ProductoModel = require('../models/producto.model');
+const CategoriaModel = require('../models/categoria.model');
 const fs = require('fs');
 const path = require('path');
 
-class ProductoController {
+class CategoriaController {
     static async getAll(req, res) {
         try {
-            const productos = await ProductoModel.getAll();
+            const categorias = await CategoriaModel.getAll();
             res.json({
                 success: true,
-                data: productos
+                data: categorias
             });
         } catch (error) {
-            console.error('Error obteniendo productos:', error);
+            console.error('Error obteniendo categorías:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -22,21 +22,21 @@ class ProductoController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const producto = await ProductoModel.getById(id);
+            const categoria = await CategoriaModel.getById(id);
 
-            if (!producto) {
+            if (!categoria) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
             res.json({
                 success: true,
-                data: producto
+                data: categoria
             });
         } catch (error) {
-            console.error('Error obteniendo producto:', error);
+            console.error('Error obteniendo categoría:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -53,12 +53,12 @@ class ProductoController {
                 data.imagen = `/uploads/${req.file.filename}`;
             }
 
-            const productoId = await ProductoModel.create(data);
+            const categoriaId = await CategoriaModel.create(data);
 
             res.status(201).json({
                 success: true,
-                message: 'Producto creado exitosamente',
-                data: { id: productoId }
+                message: 'Categoría creada exitosamente',
+                data: { id: categoriaId }
             });
         } catch (error) {
             // Si hay error y se subió archivo, eliminarlo
@@ -69,7 +69,7 @@ class ProductoController {
                 }
             }
 
-            console.error('Error creando producto:', error);
+            console.error('Error creando categoría:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -83,11 +83,11 @@ class ProductoController {
             const data = { ...req.body };
 
             // Obtener datos actuales para manejar imagen
-            const productoActual = await ProductoModel.getById(id);
-            if (!productoActual) {
+            const categoriaActual = await CategoriaModel.getById(id);
+            if (!categoriaActual) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
@@ -96,32 +96,32 @@ class ProductoController {
                 data.imagen = `/uploads/${req.file.filename}`;
                 
                 // Eliminar imagen anterior si existe
-                if (productoActual.imagen) {
-                    const oldImagePath = path.join(__dirname, '..', productoActual.imagen);
+                if (categoriaActual.imagen) {
+                    const oldImagePath = path.join(__dirname, '..', categoriaActual.imagen);
                     if (fs.existsSync(oldImagePath)) {
                         fs.unlinkSync(oldImagePath);
                     }
                 }
             } else {
                 // Mantener imagen actual
-                data.imagen = productoActual.imagen;
+                data.imagen = categoriaActual.imagen;
             }
 
-            const updated = await ProductoModel.update(id, data);
+            const updated = await CategoriaModel.update(id, data);
 
             if (!updated) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
             res.json({
                 success: true,
-                message: 'Producto actualizado exitosamente'
+                message: 'Categoría actualizada exitosamente'
             });
         } catch (error) {
-            console.error('Error actualizando producto:', error);
+            console.error('Error actualizando categoría:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -134,26 +134,26 @@ class ProductoController {
             const { id } = req.params;
             
             // Obtener datos para eliminar imagen
-            const producto = await ProductoModel.getById(id);
-            if (!producto) {
+            const categoria = await CategoriaModel.getById(id);
+            if (!categoria) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
-            const deleted = await ProductoModel.delete(id);
+            const deleted = await CategoriaModel.delete(id);
 
             if (!deleted) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
             // Eliminar imagen si existe
-            if (producto.imagen) {
-                const imagePath = path.join(__dirname, '..', producto.imagen);
+            if (categoria.imagen) {
+                const imagePath = path.join(__dirname, '..', categoria.imagen);
                 if (fs.existsSync(imagePath)) {
                     fs.unlinkSync(imagePath);
                 }
@@ -161,13 +161,13 @@ class ProductoController {
 
             res.json({
                 success: true,
-                message: 'Producto eliminado exitosamente'
+                message: 'Categoría eliminada exitosamente'
             });
         } catch (error) {
-            console.error('Error eliminando producto:', error);
+            console.error('Error eliminando categoría:', error);
             res.status(500).json({
                 success: false,
-                message: 'Error interno del servidor'
+                message: error.message || 'Error interno del servidor'
             });
         }
     }
@@ -176,21 +176,21 @@ class ProductoController {
         try {
             const { id } = req.params;
 
-            const updated = await ProductoModel.toggleActive(id);
+            const updated = await CategoriaModel.toggleActive(id);
 
             if (!updated) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Producto no encontrado'
+                    message: 'Categoría no encontrada'
                 });
             }
 
             res.json({
                 success: true,
-                message: 'Estado del producto actualizado'
+                message: 'Estado de la categoría actualizado'
             });
         } catch (error) {
-            console.error('Error cambiando estado del producto:', error);
+            console.error('Error cambiando estado de categoría:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -199,4 +199,4 @@ class ProductoController {
     }
 }
 
-module.exports = ProductoController;
+module.exports = CategoriaController;
