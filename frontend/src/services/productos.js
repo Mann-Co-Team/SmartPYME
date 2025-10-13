@@ -1,27 +1,39 @@
-import axios from 'axios';
-
-const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('token')}`
-  }
-});
+import api from './api';
 
 export const getProductos = async () => {
-  const res = await API.get('/productos');
-  return res.data.data;
+  const response = await api.get('/productos');
+  return response.data.data;
 };
 
-export const crearProducto = async (data) => {
-  const res = await API.post('/productos', data);
-  return res.data.data;
+export const getProducto = async (id) => {
+  const response = await api.get(`/productos/${id}`);
+  return response.data.data;
 };
 
-export const actualizarProducto = async (id, data) => {
-  await API.put(`/productos/${id}`, data);
+export const createProducto = async (formData) => {
+  const response = await api.post('/productos', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
 };
 
-export const eliminarProducto = async (id) => {
-  await API.delete(`/productos/${id}`);
+export const updateProducto = async (id, formData) => {
+  const response = await api.put(`/productos/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const deleteProducto = async (id) => {
+  const response = await api.delete(`/productos/${id}`);
+  return response.data;
+};
+
+export const toggleProductoActive = async (id) => {
+  const response = await api.patch(`/productos/${id}/toggle-active`);
+  return response.data;
 };
