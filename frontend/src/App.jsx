@@ -16,7 +16,7 @@ import AdminProductos from './pages/admin/Productos.jsx';
 import AdminCategorias from './pages/admin/Categorias.jsx';
 import AdminPedidos from './pages/admin/Pedidos.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
-import PrivateRoute from './components/PrivateRoute.jsx';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
