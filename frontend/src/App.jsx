@@ -10,6 +10,8 @@ import AdminLayout from './components/Layout/AdminLayout.jsx';
 
 // Páginas
 import HomePage from './pages/public/HomePage';
+import Register from './pages/public/Register';
+import Login from './pages/public/Login';
 import AdminLogin from './pages/admin/Login.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import AdminProductos from './pages/admin/Productos.jsx';
@@ -30,6 +32,12 @@ function App() {
                 <HomePage />
               </PublicLayout>
             } />
+
+            {/* Registro público */}
+            <Route path="/registro" element={<Register />} />
+
+            {/* Login público */}
+            <Route path="/login" element={<Login />} />
 
             {/* Login admin */}
             <Route path="/admin/login" element={<AdminLogin />} />

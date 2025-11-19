@@ -23,9 +23,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/admin/login';
+      // Solo redirigir si estamos en una ruta protegida (admin)
+      if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/admin/login';
+      }
     }
     return Promise.reject(error);
   }

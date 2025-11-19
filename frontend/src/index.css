@@ -1,36 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
 
-@layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background-color: #f9fafb;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animaciones personalizadas */
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
   }
-  
-  body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 text-white font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200;
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:ring-gray-100 text-gray-900 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200;
-  }
-  
-  .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-200 text-white font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200;
-  }
-  
-  .card {
-    @apply bg-white rounded-xl shadow-soft border border-gray-100;
-  }
-  
-  .input-primary {
-    @apply block w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none transition-colors;
-  }
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

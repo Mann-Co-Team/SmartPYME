@@ -13,14 +13,14 @@ function question(prompt) {
   });
 }
 
-async function createAdmin() {
+async function createEmployee() {
   try {
-    console.log('\n🔐 === CREACIÓN DE USUARIO ADMINISTRADOR ===\n');
+    console.log('\n👤 === CREACIÓN DE USUARIO EMPLEADO ===\n');
 
     // Solicitar datos
-    const nombre = await question('Nombre del administrador: ');
-    const apellido = await question('Apellido del administrador: ');
-    const email = await question('Email del administrador: ');
+    const nombre = await question('Nombre del empleado: ');
+    const apellido = await question('Apellido del empleado: ');
+    const email = await question('Email del empleado: ');
     
     // Validar email
     if (!email.includes('@')) {
@@ -29,6 +29,7 @@ async function createAdmin() {
       process.exit(1);
     }
 
+    const telefono = await question('Teléfono (opcional): ');
     const password = await question('Contraseña (mínimo 6 caracteres): ');
     
     // Validar contraseña
@@ -60,23 +61,24 @@ async function createAdmin() {
     if (existing.length > 0) {
       // Actualizar usuario existente
       await db.execute(
-        'UPDATE usuarios SET nombre = ?, apellido = ?, password = ?, id_rol = 1, activo = 1 WHERE email = ?',
-        [nombre, apellido, hashedPassword, email]
+        'UPDATE usuarios SET nombre = ?, apellido = ?, password = ?, telefono = ?, id_rol = 2, activo = 1 WHERE email = ?',
+        [nombre, apellido, hashedPassword, telefono || null, email]
       );
-      console.log('✅ Usuario administrador actualizado exitosamente');
+      console.log('✅ Usuario empleado actualizado exitosamente');
       console.log(`📧 Email: ${email}`);
     } else {
-      // Crear nuevo usuario administrador
+      // Crear nuevo usuario empleado
       await db.execute(
-        'INSERT INTO usuarios (id_rol, nombre, apellido, email, password, activo) VALUES (?, ?, ?, ?, ?, ?)',
-        [1, nombre, apellido, email, hashedPassword, 1]
+        'INSERT INTO usuarios (id_rol, nombre, apellido, email, password, telefono, activo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [2, nombre, apellido, email, hashedPassword, telefono || null, 1]
       );
-      console.log('✅ Usuario administrador creado exitosamente');
+      console.log('✅ Usuario empleado creado exitosamente');
       console.log(`📧 Email: ${email}`);
       console.log(`👤 Nombre: ${nombre} ${apellido}`);
+      console.log(`📞 Teléfono: ${telefono || 'No especificado'}`);
     }
 
-    console.log('\n🎉 ¡Listo! Ya puedes iniciar sesión en /admin/login\n');
+    console.log('\n🎉 ¡Listo! Ya puede iniciar sesión en /admin/login\n');
 
     rl.close();
     process.exit(0);
@@ -87,4 +89,4 @@ async function createAdmin() {
   }
 }
 
-createAdmin();
+createEmployee();

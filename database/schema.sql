@@ -23,7 +23,7 @@ CREATE TABLE roles (
 
 -- Crear tabla de usuarios (empleados/admin)
 CREATE TABLE usuarios (
-    id_usuario INT IDENTITY(1,1) PRIMARY KEY,
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,

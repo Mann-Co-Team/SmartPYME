@@ -2,8 +2,8 @@ import api from './api';
 
 export const getSettings = async () => {
   try {
-    const response = await api.get('/settings');
-    return response.data.data;
+    const response = await api.get('/settings/public/all');
+    return response.data.data || response.data;
   } catch (error) {
     console.error('Error obteniendo configuraciones:', error);
     return {};

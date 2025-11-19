@@ -4,6 +4,9 @@ const SettingsController = require('../controllers/settings.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
 
+// Obtener configuraciones públicas (sin autenticación)
+router.get('/public/all', SettingsController.getAll);
+
 // Obtener todas las configuraciones - admin solamente
 router.get('/', 
     authenticateToken,

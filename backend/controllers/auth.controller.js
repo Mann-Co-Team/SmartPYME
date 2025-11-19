@@ -79,6 +79,59 @@ class AuthController {
         }
     }
 
+    // Registro público de clientes
+    static async registerPublic(req, res) {
+        console.log('📝 Registro público - Body recibido:', req.body);
+        try {
+            const { nombre, email, password, telefono } = req.body;
+
+            // Validar datos requeridos
+            if (!nombre || !email || !password) {
+                console.log('❌ Faltan campos obligatorios');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Nombre, email y contraseña son obligatorios'
+                });
+            }
+
+            // Verificar si el email ya existe
+            console.log('🔍 Verificando email:', email);
+            const existingUser = await UsuarioModel.getByEmail(email);
+            if (existingUser) {
+                console.log('❌ Email ya existe');
+                return res.status(400).json({
+                    success: false,
+                    message: 'El email ya está registrado'
+                });
+            }
+
+            // Crear usuario con rol de cliente (id_rol = 3)
+            console.log('✅ Creando usuario con rol cliente...');
+            const userId = await UsuarioModel.create({
+                nombre,
+                apellido: '',
+                email,
+                password,
+                telefono: telefono || null,
+                id_rol: 3 // Cliente
+            });
+
+            console.log('✅ Usuario creado exitosamente con ID:', userId);
+            res.status(201).json({
+                success: true,
+                message: 'Usuario registrado exitosamente',
+                data: { id: userId }
+            });
+
+        } catch (error) {
+            console.error('❌ Error en registro público:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error al registrar usuario: ' + error.message
+            });
+        }
+    }
+
     // Registro de nuevo usuario (solo admin)
     static async register(req, res) {
         try {

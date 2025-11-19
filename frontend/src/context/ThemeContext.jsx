@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { getSettings } from '../services/settings';
 
 const ThemeContext = createContext();
@@ -25,15 +25,21 @@ export const ThemeProvider = ({ children }) => {
   });
   
   const [loading, setLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    loadSettings();
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      loadSettings();
+    }
   }, []);
 
   const loadSettings = async () => {
     try {
       const data = await getSettings();
-      setSettings(prev => ({ ...prev, ...data }));
+      if (data && Object.keys(data).length > 0) {
+        setSettings(prev => ({ ...prev, ...data }));
+      }
     } catch (error) {
       console.error('Error cargando configuraciones:', error);
     } finally {

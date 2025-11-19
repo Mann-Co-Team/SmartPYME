@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getProductos } from '../../services/productos';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { usePermissions } from '../../utils/permissions';
 
 export default function AdminProductos() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { canDeleteProducts } = usePermissions();
 
   useEffect(() => {
     loadProductos();
@@ -100,9 +102,11 @@ export default function AdminProductos() {
                     <button className="text-indigo-600 hover:text-indigo-900 mr-3">
                       Editar
                     </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      Eliminar
-                    </button>
+                    {canDeleteProducts && (
+                      <button className="text-red-600 hover:text-red-900">
+                        Eliminar
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

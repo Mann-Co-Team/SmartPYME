@@ -60,7 +60,7 @@ class UsuarioModel {
             `, [
                 userData.id_rol,
                 userData.nombre,
-                userData.apellido,
+                userData.apellido !== undefined ? userData.apellido : '',
                 userData.email,
                 hashedPassword,
                 userData.telefono || null

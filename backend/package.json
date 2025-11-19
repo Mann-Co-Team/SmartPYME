@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "create-admin": "node create-admin.js",
+    "create-employee": "node create-employee.js",
+    "reset-password": "node reset-password.js",
+    "list-users": "node list-users.js",
     "test": "echo \"Tests no configurados aún\" && exit 1"
   },
   "dependencies": {
