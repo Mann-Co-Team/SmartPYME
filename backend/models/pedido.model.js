@@ -1,15 +1,28 @@
 const db = require('../config/db');
 
+// RF-7: Transiciones válidas de estados
+const TRANSICIONES_VALIDAS = {
+    1: [2, 4, 7],     // Pendiente -> Confirmado, Listo, Cancelado
+    2: [3, 7],        // Confirmado -> En Proceso, Cancelado
+    3: [4, 7],        // En Proceso -> Listo, Cancelado
+    4: [6],           // Listo -> Completado
+    5: [6],           // Enviado -> Completado (no usado en flujo normal)
+    6: [],            // Completado -> ninguno (estado final)
+    7: []             // Cancelado -> ninguno (estado final)
+};
+
 class PedidoModel {
     static async getAll() {
         const [rows] = await db.execute(`
             SELECT 
-                p.id_pedido, 
-                CONCAT(c.nombre, ' ', c.apellido) AS cliente, 
-                CONCAT(u.nombre, ' ', u.apellido) AS empleado, 
-                p.fecha_pedido, 
-                e.nombre_estado, 
-                p.total, 
+                p.id_pedido,
+                p.id_estado,
+                CONCAT(c.nombre, ' ', c.apellido) AS cliente,
+                c.email AS email_cliente,
+                CONCAT(u.nombre, ' ', u.apellido) AS empleado,
+                p.fecha_pedido,
+                e.nombre_estado,
+                p.total,
                 p.metodo_pago
             FROM pedidos p
             LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
@@ -45,14 +58,18 @@ class PedidoModel {
         
         const [rows] = await db.execute(`
             SELECT 
-                p.id_pedido AS id,
+                p.id_pedido,
+                p.id_estado,
                 p.fecha_pedido,
                 p.total,
-                e.nombre_estado AS estado,
+                e.nombre_estado,
                 p.metodo_pago,
-                p.notas
+                p.notas,
+                p.created_at,
+                CONCAT(c.nombre, ' ', c.apellido) AS cliente
             FROM pedidos p
             LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
+            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
             WHERE p.id_cliente = ?
             ORDER BY p.fecha_pedido DESC
         `, [clienteId]);
@@ -69,7 +86,7 @@ class PedidoModel {
                 FROM detalle_pedidos dp
                 INNER JOIN productos pr ON dp.id_producto = pr.id_producto
                 WHERE dp.id_pedido = ?
-            `, [pedido.id]);
+            `, [pedido.id_pedido]);
             pedido.productos = detalle;
         }
         
@@ -434,11 +451,50 @@ class PedidoModel {
         };
     }
 
+    // RF-7: Validar transición de estado
+    static validarTransicion(estadoActualId, nuevoEstadoId) {
+        // Si no hay transiciones definidas para el estado actual, no se puede cambiar
+        if (!TRANSICIONES_VALIDAS[estadoActualId]) {
+            return {
+                valido: false,
+                mensaje: 'El estado actual no permite cambios'
+            };
+        }
+
+        // Verificar si el nuevo estado está en la lista de transiciones válidas
+        if (!TRANSICIONES_VALIDAS[estadoActualId].includes(nuevoEstadoId)) {
+            return {
+                valido: false,
+                mensaje: `No se puede cambiar del estado actual al estado solicitado. Transición no permitida.`
+            };
+        }
+
+        return { valido: true };
+    }
+
     // Cambiar estado de un pedido (solo admin/empleado)
     static async cambiarEstado(pedidoId, nuevoEstadoId, usuarioId, notas = null) {
         const connection = await db.getConnection();
         
         try {
+            // RF-7: Obtener estado actual del pedido
+            const [pedidoActual] = await connection.execute(
+                'SELECT id_estado FROM pedidos WHERE id_pedido = ?',
+                [pedidoId]
+            );
+
+            if (pedidoActual.length === 0) {
+                throw new Error('Pedido no encontrado');
+            }
+
+            const estadoActualId = pedidoActual[0].id_estado;
+
+            // RF-7: Validar transición
+            const validacion = this.validarTransicion(estadoActualId, nuevoEstadoId);
+            if (!validacion.valido) {
+                throw new Error(validacion.mensaje);
+            }
+
             await connection.beginTransaction();
 
             // Actualizar estado del pedido
@@ -448,17 +504,11 @@ class PedidoModel {
                 WHERE id_pedido = ?
             `, [nuevoEstadoId, usuarioId, pedidoId]);
 
-            // El trigger se encargará de insertar en historial_estados_pedido
-            // Pero si queremos agregar notas personalizadas, podemos actualizar el último registro
-            if (notas) {
-                await connection.execute(`
-                    UPDATE historial_estados_pedido
-                    SET notas = ?
-                    WHERE id_pedido = ? AND id_estado = ?
-                    ORDER BY fecha_cambio DESC
-                    LIMIT 1
-                `, [notas, pedidoId, nuevoEstadoId]);
-            }
+            // Insertar registro en historial_estados_pedido
+            await connection.execute(`
+                INSERT INTO historial_estados_pedido (id_pedido, id_estado, id_usuario, notas)
+                VALUES (?, ?, ?, ?)
+            `, [pedidoId, nuevoEstadoId, usuarioId, notas || null]);
 
             await connection.commit();
             return true;

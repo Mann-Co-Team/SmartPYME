@@ -27,18 +27,20 @@ export default function AdminDetallePedido() {
         throw new Error('Error al cargar el pedido');
       }
 
-      const data = await resPedido.json();
-      setPedido(data);
+      const response = await resPedido.json();
+      setPedido(response.data); // Extraer 'data' del objeto { success: true, data: {...} }
 
-      // Cargar estados
-      const resEstados = await fetch('http://localhost:3000/api/estados', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (resEstados.ok) {
-        const dataEstados = await resEstados.json();
-        setEstados(dataEstados);
-      }
+      // Definir estados localmente (deben coincidir con la BD)
+      const estadosDefinidos = [
+        { id_estado: 1, nombre_estado: 'Pendiente' },
+        { id_estado: 2, nombre_estado: 'Confirmado' },
+        { id_estado: 3, nombre_estado: 'En Proceso' },
+        { id_estado: 4, nombre_estado: 'Listo' },
+        { id_estado: 5, nombre_estado: 'Enviado' },
+        { id_estado: 6, nombre_estado: 'Completado' },
+        { id_estado: 7, nombre_estado: 'Cancelado' }
+      ];
+      setEstados(estadosDefinidos);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -134,9 +136,9 @@ export default function AdminDetallePedido() {
     );
   }
 
-  if (error || !pedido) {
+  if (error) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <button
           onClick={() => navigate('/admin/pedidos')}
           className="btn-secondary"
@@ -144,10 +146,14 @@ export default function AdminDetallePedido() {
           ← Volver a Pedidos
         </button>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Error: {error || 'Pedido no encontrado'}</p>
+          <p className="text-red-800">Error: {error}</p>
         </div>
       </div>
     );
+  }
+
+  if (!pedido) {
+    return null; // Todavía cargando
   }
 
   const pedidoData = pedido.pedido;

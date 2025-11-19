@@ -79,6 +79,13 @@ try {
     console.error('❌ Error cargando rutas de estados:', error.message);
 }
 
+try {
+    app.use('/api/dashboard', require('./routes/dashboard.routes'));
+    console.log('✅ Rutas de dashboard cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de dashboard:', error.message);
+}
+
 // Ruta de estado de la API
 app.get('/api/status', (req, res) => {
     res.json({

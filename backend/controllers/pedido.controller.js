@@ -122,7 +122,8 @@ class PedidoController {
             }
 
             // Verificar que el pedido esté en estado pendiente
-            if (pedido.estado !== 'pendiente') {
+            const estadoLower = pedido.estado?.toLowerCase();
+            if (estadoLower !== 'pendiente') {
                 return res.status(400).json({ 
                     success: false, 
                     message: `No puedes cancelar un pedido en estado "${pedido.estado}". Solo se pueden cancelar pedidos pendientes.` 
@@ -164,8 +165,9 @@ class PedidoController {
             }
 
             // Verificar estados válidos para solicitar cancelación
-            const estadosValidos = ['pendiente', 'confirmado', 'en_proceso'];
-            if (!estadosValidos.includes(pedido.estado)) {
+            const estadoLower = pedido.estado?.toLowerCase();
+            const estadosValidos = ['pendiente', 'confirmado', 'en proceso'];
+            if (!estadosValidos.includes(estadoLower)) {
                 return res.status(400).json({ 
                     success: false, 
                     message: `No puedes solicitar cancelación de un pedido en estado "${pedido.estado}"` 
@@ -173,7 +175,7 @@ class PedidoController {
             }
 
             // Ya tiene solicitud pendiente
-            if (pedido.estado === 'solicitud_cancelacion') {
+            if (estadoLower === 'solicitud_cancelacion') {
                 return res.status(400).json({ 
                     success: false, 
                     message: 'Ya existe una solicitud de cancelación pendiente para este pedido' 
@@ -279,7 +281,7 @@ class PedidoController {
         }
     }
 
-    // Cambiar estado de un pedido (solo admin/empleado)
+    // RF-7: Cambiar estado de un pedido (solo admin/empleado)
     static async cambiarEstado(req, res) {
         try {
             const { id } = req.params;
@@ -313,6 +315,17 @@ class PedidoController {
 
         } catch (error) {
             console.error('Error cambiando estado:', error);
+            
+            // RF-7: Si el error es de validación de transición, retornar 400
+            if (error.message.includes('Transición no permitida') || 
+                error.message.includes('no permite cambios') ||
+                error.message.includes('Pedido no encontrado')) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: error.message 
+                });
+            }
+            
             res.status(500).json({ 
                 success: false, 
                 message: 'Error al cambiar el estado del pedido' 

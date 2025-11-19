@@ -1,174 +1,241 @@
-import React from 'react';
-import { 
-  ShoppingBagIcon, 
-  ShoppingCartIcon, 
-  CurrencyDollarIcon, 
-  UsersIcon,
-  ArrowTrendingUpIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
 
 export default function AdminDashboard() {
-  const stats = [
-    {
-      name: 'Total Productos',
-      value: '0',
-      icon: ShoppingBagIcon,
-      change: '+0%',
-      changeType: 'increase',
-      bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600'
-    },
-    {
-      name: 'Pedidos',
-      value: '0',
-      icon: ShoppingCartIcon,
-      change: '+0%',
-      changeType: 'increase',
-      bgColor: 'bg-gradient-to-br from-green-500 to-emerald-600',
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600'
-    },
-    {
-      name: 'Ventas Hoy',
-      value: '$0',
-      icon: CurrencyDollarIcon,
-      change: '+0%',
-      changeType: 'increase',
-      bgColor: 'bg-gradient-to-br from-purple-500 to-purple-600',
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600'
-    },
-    {
-      name: 'Clientes',
-      value: '0',
-      icon: UsersIcon,
-      change: '+0%',
-      changeType: 'increase',
-      bgColor: 'bg-gradient-to-br from-orange-500 to-orange-600',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600'
-    },
-  ];
+  const [metricas, setMetricas] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sinDatos, setSinDatos] = useState(false);
+
+  useEffect(() => {
+    cargarMetricas();
+  }, []);
+
+  const cargarMetricas = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const res = await fetch('http://localhost:3000/api/dashboard/metricas', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        throw new Error('Error al cargar métricas');
+      }
+
+      const response = await res.json();
+      setMetricas(response.data);
+      setSinDatos(response.sinDatos || false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(price);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-500">Cargando dashboard...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-800">Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (sinDatos) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">📊 Dashboard</h1>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+          <div className="text-6xl mb-4">📭</div>
+          <p className="text-xl font-semibold text-yellow-800">Sin información disponible</p>
+          <p className="text-gray-600 mt-2">No hay datos suficientes para mostrar el dashboard</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Resumen general del negocio</p>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">📊 Dashboard</h1>
+        <button onClick={cargarMetricas} className="btn-secondary">
+          🔄 Actualizar
+        </button>
+      </div>
+
+      {/* Tarjetas de métricas principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-600">Ventas Hoy</p>
+              <p className="text-2xl font-bold text-blue-900 mt-1">
+                {formatPrice(metricas.ventas.hoy)}
+              </p>
+            </div>
+            <div className="text-4xl">💰</div>
+          </div>
         </div>
-        <div className="flex items-center text-sm text-gray-500">
-          <ClockIcon className="h-5 w-5 mr-2" />
-          Actualizado hace un momento
+
+        <div className="card p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-green-600">Ventas del Mes</p>
+              <p className="text-2xl font-bold text-green-900 mt-1">
+                {formatPrice(metricas.ventas.mes)}
+              </p>
+            </div>
+            <div className="text-4xl">📈</div>
+          </div>
+        </div>
+
+        <div className="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-purple-600">Ventas del Año</p>
+              <p className="text-2xl font-bold text-purple-900 mt-1">
+                {formatPrice(metricas.ventas.anio)}
+              </p>
+            </div>
+            <div className="text-4xl">🎯</div>
+          </div>
+        </div>
+
+        <div className="card p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-orange-600">Pedidos Activos</p>
+              <p className="text-2xl font-bold text-orange-900 mt-1">
+                {metricas.estadisticas.pedidos_activos}
+              </p>
+            </div>
+            <div className="text-4xl">📦</div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div
-            key={stat.name}
-            className="relative overflow-hidden bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
-          >
-            {/* Card content */}
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-600 mb-1">
-                    {stat.name}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stat.value}
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-                    <span className={`text-sm font-medium ${
-                      stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {stat.change}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-1">vs ayer</span>
+      {/* Grid con 2 columnas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Pedidos por Estado</h2>
+          <div className="space-y-3">
+            {metricas.pedidosPorEstado.map((estado) => (
+              <div key={estado.id_estado} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    estado.id_estado === 1 ? 'bg-yellow-400' :
+                    estado.id_estado === 2 ? 'bg-blue-400' :
+                    estado.id_estado === 3 ? 'bg-purple-400' :
+                    estado.id_estado === 4 ? 'bg-green-400' :
+                    estado.id_estado === 5 ? 'bg-indigo-400' :
+                    estado.id_estado === 6 ? 'bg-green-600' :
+                    'bg-red-400'
+                  }`}></div>
+                  <span className="text-gray-700">{estado.nombre_estado}</span>
+                </div>
+                <span className="font-semibold text-gray-900">{estado.cantidad}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">🏆 Productos Más Vendidos</h2>
+          <div className="space-y-3">
+            {metricas.productosTop.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
+            ) : (
+              metricas.productosTop.map((producto, index) => (
+                <div key={producto.id_producto} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center bg-primary-500 text-white rounded-full font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{producto.nombre}</p>
+                      <p className="text-sm text-gray-500">{producto.nombre_categoria}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{producto.total_vendido} uds</p>
+                    <p className="text-sm text-gray-500">{formatPrice(producto.ingresos_totales)}</p>
                   </div>
                 </div>
-                <div className={`${stat.iconBg} p-2 rounded-lg`}>
-                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
-                </div>
-              </div>
-            </div>
-
-            {/* Decorative gradient bar */}
-            <div className={`h-1 ${stat.bgColor}`}></div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Pedidos Recientes */}
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Pedidos Recientes</h3>
-            <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-              Ver todos
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <ShoppingCartIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No hay pedidos recientes</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Los pedidos aparecerán aquí cuando se realicen
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Productos Más Vendidos */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Productos Destacados</h3>
-            <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-              Ver todos
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <ShoppingBagIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No hay productos registrados</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Agrega productos para ver estadísticas
-                </p>
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-md p-4 text-white">
-        <h3 className="text-lg font-semibold mb-3">Acciones Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-lg p-3 text-left transition-all duration-200 transform hover:scale-105">
-            <ShoppingBagIcon className="h-5 w-5 mb-1.5" />
-            <p className="font-medium">Agregar Producto</p>
-            <p className="text-sm opacity-80 mt-1">Nuevo producto al catálogo</p>
-          </button>
-          <button className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-lg p-4 text-left transition-all duration-200 transform hover:scale-105">
-            <ShoppingCartIcon className="h-6 w-6 mb-2" />
-            <p className="font-medium">Ver Pedidos</p>
-            <p className="text-sm opacity-80 mt-1">Gestionar pedidos activos</p>
-          </button>
-          <button className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-lg p-4 text-left transition-all duration-200 transform hover:scale-105">
-            <UsersIcon className="h-6 w-6 mb-2" />
-            <p className="font-medium">Ver Clientes</p>
-            <p className="text-sm opacity-80 mt-1">Administrar base de clientes</p>
-          </button>
+      {/* Estadísticas adicionales */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="card p-6 text-center">
+          <div className="text-4xl mb-2">✅</div>
+          <p className="text-sm text-gray-600">Pedidos Completados</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">
+            {metricas.estadisticas.pedidos_completados}
+          </p>
+        </div>
+
+        <div className="card p-6 text-center">
+          <div className="text-4xl mb-2">🛍️</div>
+          <p className="text-sm text-gray-600">Productos Activos</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">
+            {metricas.estadisticas.productos_activos}
+          </p>
+        </div>
+
+        <div className="card p-6 text-center">
+          <div className="text-4xl mb-2">👥</div>
+          <p className="text-sm text-gray-600">Clientes Activos</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">
+            {metricas.estadisticas.clientes_activos}
+          </p>
+        </div>
+      </div>
+
+      {/* Categorías */}
+      <div className="card p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">📂 Resumen por Categorías</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Productos</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Unidades Vendidas</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ingresos Totales</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {metricas.categorias.map((cat) => (
+                <tr key={cat.id_categoria} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{cat.nombre_categoria}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 text-center">{cat.total_productos}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 text-center">{cat.unidades_vendidas}</td>
+                  <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+                    {formatPrice(cat.ingresos_totales)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

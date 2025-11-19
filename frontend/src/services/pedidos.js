@@ -17,3 +17,8 @@ export const actualizarPedido = async (id, data) => {
 export const eliminarPedido = async (id) => {
   await api.delete(`/pedidos/${id}`);
 };
+
+export const cancelarPedido = async (id) => {
+  const res = await api.post(`/pedidos/${id}/cancelar`);
+  return res.data;
+};

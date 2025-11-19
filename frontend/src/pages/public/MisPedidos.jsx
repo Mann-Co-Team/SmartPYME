@@ -172,21 +172,21 @@ const MisPedidos = () => {
       ) : (
         <div className="space-y-4">
           {pedidos.map((pedido) => (
-            <div key={pedido.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div key={pedido.id_pedido} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               <div className="p-6">
                 {/* Header del pedido */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 pb-4 border-b border-gray-200">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      Pedido {pedido.numero_pedido || `#${pedido.id}`}
+                      Pedido {pedido.numero_pedido || `#${pedido.id_pedido}`}
                     </h3>
                     <p className="text-sm text-gray-500">
                       {formatDate(pedido.fecha_pedido)}
                     </p>
                   </div>
                   <div className="mt-2 sm:mt-0">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getEstadoColor(pedido.estado)}`}>
-                      {getEstadoTexto(pedido.estado)}
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getEstadoColor(pedido.nombre_estado?.toLowerCase())}`}>
+                      {pedido.nombre_estado || 'Desconocido'}
                     </span>
                   </div>
                 </div>
@@ -265,16 +265,16 @@ const MisPedidos = () => {
                 <div className="mt-4 flex gap-2">
                   {/* RF-4: Ver detalle del pedido */}
                   <button
-                    onClick={() => navigate(`/pedidos/${pedido.id}`)}
+                    onClick={() => navigate(`/pedidos/${pedido.id_pedido}`)}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     Ver Detalle
                   </button>
 
                   {/* OPCIÓN 1: Cancelación inmediata si está pendiente */}
-                  {pedido.estado === 'pendiente' && (
+                  {pedido.nombre_estado?.toLowerCase() === 'pendiente' && (
                     <button
-                      onClick={() => handleCancelarPedido(pedido.id)}
+                      onClick={() => handleCancelarPedido(pedido.id_pedido)}
                       className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                     >
                       Cancelar Pedido
@@ -282,9 +282,9 @@ const MisPedidos = () => {
                   )}
 
                   {/* OPCIÓN 2: Solicitar cancelación si está confirmado o en proceso */}
-                  {['confirmado', 'en_proceso'].includes(pedido.estado) && (
+                  {['confirmado', 'en proceso'].includes(pedido.nombre_estado?.toLowerCase()) && (
                     <button
-                      onClick={() => handleSolicitarCancelacion(pedido.id)}
+                      onClick={() => handleSolicitarCancelacion(pedido.id_pedido)}
                       className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
                     >
                       Solicitar Cancelación
@@ -292,7 +292,7 @@ const MisPedidos = () => {
                   )}
 
                   {/* Estado: Solicitud pendiente */}
-                  {pedido.estado === 'solicitud_cancelacion' && (
+                  {pedido.nombre_estado?.toLowerCase() === 'solicitud_cancelacion' && (
                     <div className="flex-1 px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-center font-medium">
                       ⏳ Solicitud de cancelación pendiente
                     </div>
