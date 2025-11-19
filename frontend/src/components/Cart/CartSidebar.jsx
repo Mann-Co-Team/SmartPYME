@@ -1,10 +1,12 @@
 import React, { Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const CartSidebar = () => {
+  const navigate = useNavigate();
   const { items, isOpen, setIsOpen, updateQuantity, removeItem, getTotal } = useCart();
   const { settings } = useTheme();
 
@@ -135,7 +137,13 @@ const CartSidebar = () => {
                           Envío calculado al finalizar compra
                         </p>
                         <div className="mt-6">
-                          <button className="btn-primary w-full">
+                          <button 
+                            className="btn-primary w-full"
+                            onClick={() => {
+                              setIsOpen(false);
+                              navigate('/checkout');
+                            }}
+                          >
                             Proceder al pago
                           </button>
                         </div>

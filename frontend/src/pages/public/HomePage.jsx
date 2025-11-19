@@ -11,7 +11,10 @@ const HomePage = () => {
   const [categorias, setCategorias] = useState([]);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('nombre'); // nombre, precio-asc, precio-desc
   const { addItem } = useCart();
 
   useEffect(() => {
@@ -20,6 +23,7 @@ const HomePage = () => {
 
   const loadData = async () => {
     try {
+      setError(null);
       const [categoriasData, productosData] = await Promise.all([
         getCategorias(),
         getProductos()
@@ -28,14 +32,40 @@ const HomePage = () => {
       setProductos(productosData.filter(prod => prod.activo));
     } catch (error) {
       console.error('Error cargando datos:', error);
+      setError('Servicio temporalmente no disponible. Por favor, intenta nuevamente más tarde.');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredProducts = selectedCategory
-    ? productos.filter(prod => prod.id_categoria === selectedCategory)
-    : productos;
+  // Función para obtener el nombre de la categoría
+  const getCategoryName = (id_categoria) => {
+    const categoria = categorias.find(cat => cat.id_categoria === id_categoria);
+    return categoria ? categoria.nombre : 'Sin categoría';
+  };
+
+  // Filtrado y búsqueda
+  const filteredProducts = productos.filter(prod => {
+    const matchCategory = selectedCategory === null || prod.id_categoria === selectedCategory;
+    const matchSearch = searchTerm === '' || 
+      prod.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (prod.descripcion && prod.descripcion.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchCategory && matchSearch;
+  });
+
+  // Ordenamiento
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch(sortBy) {
+      case 'nombre':
+        return a.nombre.localeCompare(b.nombre);
+      case 'precio-asc':
+        return a.precio - b.precio;
+      case 'precio-desc':
+        return b.precio - a.precio;
+      default:
+        return 0;
+    }
+  });
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
@@ -48,6 +78,29 @@ const HomePage = () => {
     return (
       <div className="flex justify-center items-center min-h-64">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Mostrar error de conexión
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <div className="mb-4">
+            <svg className="mx-auto h-16 w-16 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Error de Conexión</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={loadData}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
       </div>
     );
   }
@@ -188,7 +241,44 @@ const HomePage = () => {
       {/* Sección de Productos (opcional - puedes mostrarla u ocultarla) */}
       <section id="productos" className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Nuestros Productos</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">Catálogo de Productos</h2>
+
+          {/* Barra de búsqueda y ordenamiento */}
+          <div className="mb-8 flex flex-col md:flex-row gap-4">
+            {/* Búsqueda */}
+            <div className="flex-1">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <svg 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Ordenamiento */}
+            <div className="md:w-64">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="nombre">Ordenar por Nombre</option>
+                <option value="precio-asc">Precio: Menor a Mayor</option>
+                <option value="precio-desc">Precio: Mayor a Menor</option>
+              </select>
+            </div>
+          </div>
 
           {/* Filtros por categoría */}
           {categorias.length > 0 && (
@@ -221,10 +311,17 @@ const HomePage = () => {
             </div>
           )}
 
+          {/* Contador de resultados */}
+          {(searchTerm || selectedCategory !== null) && (
+            <div className="mb-4 text-center text-gray-600">
+              {sortedProducts.length} {sortedProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}
+            </div>
+          )}
+
           {/* Grid de productos */}
-          {filteredProducts.length > 0 ? (
+          {sortedProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((producto) => (
+              {sortedProducts.map((producto) => (
                 <div key={producto.id_producto} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                   {/* Imagen del producto */}
                   <div className="relative w-full bg-gray-100">
@@ -236,54 +333,77 @@ const HomePage = () => {
                         e.target.src = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect fill=%27%23e5e7eb%27 width=%27200%27 height=%27200%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23666%27 font-size=%2720%27%3EProducto%3C/text%3E%3C/svg%3E';
                       }}
                     />
+                    {/* Badge de categoría */}
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-block px-2 py-1 text-xs font-medium bg-white/90 text-gray-800 rounded">
+                        {getCategoryName(producto.id_categoria)}
+                      </span>
+                    </div>
                   </div>
                   
                   {/* Contenido */}
                   <div className="p-4">
-                    <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-2">
                       {producto.nombre}
                     </h3>
                     {producto.descripcion && (
-                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                         {producto.descripcion}
                       </p>
                     )}
                     
-                    {/* Precio y botón */}
-                    <div className="flex items-center justify-between mt-3">
+                    {/* Precio y stock */}
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-bold text-blue-600">
                         {formatPrice(producto.precio)}
                       </span>
-                      <button
-                        onClick={() => addItem(producto)}
-                        disabled={producto.stock <= 0}
-                        className={`p-2 rounded-full transition-colors ${
-                          producto.stock > 0
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                        title={producto.stock > 0 ? 'Agregar al carrito' : 'Sin stock'}
-                      >
-                        <PlusIcon className="h-5 w-5" />
-                      </button>
+                      {producto.stock > 0 ? (
+                        <span className="text-xs text-green-600 font-medium">
+                          Stock: {producto.stock}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Agotado
+                        </span>
+                      )}
                     </div>
-                    
-                    {producto.stock > 0 && (
-                      <p className="text-xs text-gray-500 mt-2">Stock: {producto.stock}</p>
-                    )}
-                    
-                    {producto.stock <= 0 && (
-                      <span className="inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Agotado
-                      </span>
-                    )}
+
+                    {/* Botón agregar */}
+                    <button
+                      onClick={() => addItem(producto)}
+                      disabled={producto.stock <= 0}
+                      className={`w-full py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
+                        producto.stock > 0
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      {producto.stock > 0 ? 'Agregar al carrito' : 'Sin stock'}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">No hay productos disponibles</p>
+              <div className="mb-4">
+                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-lg font-medium">No hay productos disponibles actualmente</p>
+              {(searchTerm || selectedCategory !== null) && (
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory(null);
+                  }}
+                  className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Limpiar filtros
+                </button>
+              )}
             </div>
           )}
         </div>

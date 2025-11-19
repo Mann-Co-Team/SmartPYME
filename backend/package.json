@@ -10,6 +10,7 @@
     "create-employee": "node create-employee.js",
     "reset-password": "node reset-password.js",
     "list-users": "node list-users.js",
+    "seed": "node seed-database.js",
     "test": "echo \"Tests no configurados aún\" && exit 1"
   },
   "dependencies": {

@@ -6,11 +6,11 @@ const { authorize } = require('../middlewares/permissions');
 const upload = require('../config/multer');
 const { createProducto, updateProducto } = require('../validators/producto.validator');
 
-// Obtener todos los productos - cualquier usuario autenticado puede ver
-router.get('/', authenticateToken, ProductoController.getAll);
+// Obtener todos los productos - PÚBLICO (sin autenticación)
+router.get('/', ProductoController.getAll);
 
-// Obtener producto por ID
-router.get('/:id', authenticateToken, ProductoController.getById);
+// Obtener producto por ID - PÚBLICO
+router.get('/:id', ProductoController.getById);
 
 // Crear producto - admin y empleados
 router.post('/',

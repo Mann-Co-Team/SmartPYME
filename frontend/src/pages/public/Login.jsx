@@ -51,13 +51,16 @@ const Login = () => {
       } else {
         // Cliente
         navigate('/');
+        window.location.reload(); // Recargar para actualizar el navbar con el usuario
       }
     } catch (error) {
       console.error('Error en login:', error);
-      if (error.response?.data?.message) {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+        toast.error('Error de conexión. Intente nuevamente más tarde');
+      } else if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Error al iniciar sesión. Por favor intenta nuevamente.');
+        toast.error('Error al iniciar sesión. Por favor intenta nuevamente');
       }
     } finally {
       setLoading(false);
@@ -107,9 +110,18 @@ const Login = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => toast.info('Funcionalidad de recuperación de contraseña próximamente')}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <LockClosedIcon className="h-5 w-5 text-gray-400" />

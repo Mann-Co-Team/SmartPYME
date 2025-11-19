@@ -74,7 +74,7 @@ class AuthController {
             console.error('Error en login:', error);
             res.status(500).json({
                 success: false,
-                message: 'Error interno del servidor'
+                message: 'Error de conexión. Intente nuevamente más tarde'
             });
         }
     }
@@ -101,7 +101,7 @@ class AuthController {
                 console.log('❌ Email ya existe');
                 return res.status(400).json({
                     success: false,
-                    message: 'El email ya está registrado'
+                    message: 'El correo ingresado ya está registrado'
                 });
             }
 
@@ -127,7 +127,7 @@ class AuthController {
             console.error('❌ Error en registro público:', error);
             res.status(500).json({
                 success: false,
-                message: 'Error al registrar usuario: ' + error.message
+                message: 'Error de conexión. Intente nuevamente más tarde'
             });
         }
     }

@@ -6,11 +6,11 @@ const { authorize } = require('../middlewares/permissions');
 const upload = require('../config/multer');
 const { createCategoria, updateCategoria } = require('../validators/categoria.validator');
 
-// Obtener todas las categorías - cualquier usuario autenticado puede ver
-router.get('/', authenticateToken, CategoriaController.getAll);
+// Obtener todas las categorías - PÚBLICO (sin autenticación)
+router.get('/', CategoriaController.getAll);
 
-// Obtener categoría por ID
-router.get('/:id', authenticateToken, CategoriaController.getById);
+// Obtener categoría por ID - PÚBLICO
+router.get('/:id', CategoriaController.getById);
 
 // Crear categoría - solo admin y empleados
 router.post('/', 

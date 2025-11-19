@@ -22,7 +22,11 @@ const authenticateToken = async (req, res, next) => {
             return res.status(401).json({ message: 'Usuario no válido' });
         }
 
-        req.user = rows[0];
+        req.user = {
+            ...rows[0],
+            userId: rows[0].id_usuario,
+            role: rows[0].id_rol  // Agregar alias para compatibilidad
+        };
         next();
     } catch (error) {
         return res.status(403).json({ message: 'Token inválido' });

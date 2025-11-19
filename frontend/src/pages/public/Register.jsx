@@ -59,10 +59,12 @@ const Register = () => {
       }, 2000);
     } catch (error) {
       console.error('Error en registro:', error);
-      if (error.response?.data?.message) {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+        toast.error('Error de conexión. Intente nuevamente más tarde');
+      } else if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Error al registrar usuario. Por favor intenta nuevamente.');
+        toast.error('Error al registrar usuario. Por favor intenta nuevamente');
       }
     } finally {
       setLoading(false);

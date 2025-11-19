@@ -1,18 +1,64 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useCart } from '../../context/CartContext';
-import { ShoppingCartIcon, HomeIcon, CubeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { ShoppingCartIcon, UserIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import CartSidebar from '../Cart/CartSidebar';
 
 const PublicLayout = ({ children }) => {
+  const navigate = useNavigate();
   const { settings } = useTheme();
   const { getItemCount, toggleCart } = useCart();
+  const [user, setUser] = React.useState(null);
+  const [showUserMenu, setShowUserMenu] = React.useState(false);
+
+  React.useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
+
+  // Cerrar el menú de usuario cuando se hace clic fuera
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserMenu && !event.target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUserMenu]);
 
   const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    // Si no estamos en la página principal, navegar primero
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      // Esperar a que cargue y hacer scroll
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      // Si ya estamos en la página principal, hacer scroll directo
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
+    navigate('/');
+    window.location.reload();
   };
 
   return (
@@ -21,15 +67,18 @@ const PublicLayout = ({ children }) => {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
+            {/* Logo - Clicable para volver al inicio */}
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SP</span>
               </div>
               <span className="text-lg font-bold text-gray-900">
                 {settings.company_name || 'SmartPYME'}
               </span>
-            </div>
+            </button>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center space-x-8">
@@ -59,18 +108,86 @@ const PublicLayout = ({ children }) => {
               </button>
             </nav>
 
-            {/* Cart Button */}
-            <button
-              onClick={toggleCart}
-              className="relative flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <ShoppingCartIcon className="h-5 w-5" />
-              {getItemCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {getItemCount()}
-                </span>
+            {/* Right Side - User Menu & Cart */}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  {/* Mis Pedidos Button */}
+                  <button
+                    onClick={() => navigate('/pedidos')}
+                    className="hidden md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  >
+                    <ClipboardDocumentListIcon className="h-5 w-5" />
+                    <span>Mis Pedidos</span>
+                  </button>
+
+                  {/* User Menu */}
+                  <div className="relative user-menu-container">
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      <UserIcon className="h-5 w-5" />
+                      <span className="hidden md:block">{user.nombre}</span>
+                    </button>
+                    
+                    {showUserMenu && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                        <div className="px-4 py-2 border-b border-gray-200">
+                          <p className="text-sm font-medium text-gray-900">{user.nombre} {user.apellido}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigate('/pedidos');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                        >
+                          <ClipboardDocumentListIcon className="h-4 w-4" />
+                          <span>Mis Pedidos</span>
+                        </button>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          Cerrar Sesión
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="hidden md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  >
+                    <UserIcon className="h-5 w-5" />
+                    <span>Iniciar Sesión</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/registro')}
+                    className="hidden md:block px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium"
+                  >
+                    Registrarse
+                  </button>
+                </>
               )}
-            </button>
+
+              {/* Cart Button */}
+              <button
+                onClick={toggleCart}
+                className="relative flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <ShoppingCartIcon className="h-5 w-5" />
+                {getItemCount() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {getItemCount()}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>

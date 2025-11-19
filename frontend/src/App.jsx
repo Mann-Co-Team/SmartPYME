@@ -12,6 +12,8 @@ import AdminLayout from './components/Layout/AdminLayout.jsx';
 import HomePage from './pages/public/HomePage';
 import Register from './pages/public/Register';
 import Login from './pages/public/Login';
+import Checkout from './pages/public/Checkout';
+import MisPedidos from './pages/public/MisPedidos';
 import AdminLogin from './pages/admin/Login.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import AdminProductos from './pages/admin/Productos.jsx';
@@ -38,6 +40,20 @@ function App() {
 
             {/* Login público */}
             <Route path="/login" element={<Login />} />
+
+            {/* Checkout - Ruta protegida para clientes */}
+            <Route path="/checkout" element={
+              <PublicLayout>
+                <Checkout />
+              </PublicLayout>
+            } />
+
+            {/* Mis Pedidos - Ruta para clientes */}
+            <Route path="/pedidos" element={
+              <PublicLayout>
+                <MisPedidos />
+              </PublicLayout>
+            } />
 
             {/* Login admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
