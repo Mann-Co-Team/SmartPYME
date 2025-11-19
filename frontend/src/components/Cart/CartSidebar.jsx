@@ -76,7 +76,7 @@ const CartSidebar = () => {
                                 <li key={item.id_producto} className="flex py-6">
                                   <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                     <img
-                                      src={item.imagen ? `http://localhost:5000${item.imagen}` : '/placeholder-product.jpg'}
+                                      src={item.imagen ? `http://localhost:3000${item.imagen}` : '/placeholder-product.jpg'}
                                       alt={item.nombre}
                                       className="h-full w-full object-cover object-center"
                                     />

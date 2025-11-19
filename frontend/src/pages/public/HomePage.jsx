@@ -326,7 +326,7 @@ const HomePage = () => {
                   {/* Imagen del producto */}
                   <div className="relative w-full bg-gray-100">
                     <img
-                      src={producto.imagen ? `http://localhost:5000${producto.imagen}` : '/placeholder-product.jpg'}
+                      src={producto.imagen ? `http://localhost:3000${producto.imagen}` : '/placeholder-product.jpg'}
                       alt={producto.nombre}
                       className="h-48 w-full object-cover"
                       onError={(e) => {

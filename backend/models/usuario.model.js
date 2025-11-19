@@ -118,6 +118,32 @@ class UsuarioModel {
         }
     }
 
+    // Eliminar usuario
+    static async delete(id) {
+        try {
+            const [result] = await db.execute(`
+                DELETE FROM usuarios WHERE id_usuario = ?
+            `, [id]);
+            return result.affectedRows > 0;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Obtener roles disponibles
+    static async getRoles() {
+        try {
+            const [rows] = await db.execute(`
+                SELECT id_rol, nombre_rol, descripcion 
+                FROM roles 
+                ORDER BY id_rol
+            `);
+            return rows;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     // Validar contraseña
     static async validatePassword(password, hashedPassword) {
         return await bcrypt.compare(password, hashedPassword);

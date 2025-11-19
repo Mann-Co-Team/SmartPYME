@@ -8,7 +8,8 @@ import {
   ShoppingCartIcon,
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 
 export default function AdminLayout() {
@@ -37,6 +38,7 @@ export default function AdminLayout() {
 
   // Opciones solo para admin
   const adminOnlyNavigation = [
+    { name: 'Usuarios', href: '/admin/usuarios', icon: UsersIcon, roles: [1] },
     { name: 'Configuración', href: '/admin/settings', icon: Cog6ToothIcon, roles: [1] },
   ];
 

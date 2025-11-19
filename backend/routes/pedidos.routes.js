@@ -9,6 +9,9 @@ router.get('/', authenticateToken, PedidoController.getAll);
 // Leer pedido por ID - roles admin, empleado y cliente
 router.get('/:id', authenticateToken, requireRole([1, 2, 3]), PedidoController.getById);
 
+// RF-4: Obtener detalle completo con historial de estados
+router.get('/:id/detalle', authenticateToken, requireRole([1, 2, 3]), PedidoController.getDetallePedido);
+
 // Crear pedido - clientes (rol 3)
 router.post('/', authenticateToken, requireRole([3]), PedidoController.create);
 
@@ -20,6 +23,9 @@ router.post('/:id/solicitar-cancelacion', authenticateToken, requireRole([3]), P
 
 // Aprobar/Rechazar cancelación - admin/empleado
 router.post('/:id/aprobar-cancelacion', authenticateToken, requireRole([1, 2]), PedidoController.aprobarCancelacion);
+
+// RF-4: Cambiar estado de pedido - admin/empleado
+router.post('/:id/cambiar-estado', authenticateToken, requireRole([1, 2]), PedidoController.cambiarEstado);
 
 // Actualizar estado pedido - roles admin y empleado
 router.patch('/:id', authenticateToken, requireRole([1, 2]), PedidoController.update);

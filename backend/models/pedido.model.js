@@ -3,7 +3,14 @@ const db = require('../config/db');
 class PedidoModel {
     static async getAll() {
         const [rows] = await db.execute(`
-            SELECT p.id_pedido, p.numero_pedido, c.nombre AS cliente, u.nombre AS empleado, p.fecha_pedido, e.nombre_estado, p.total, p.metodo_entrega
+            SELECT 
+                p.id_pedido, 
+                CONCAT(c.nombre, ' ', c.apellido) AS cliente, 
+                CONCAT(u.nombre, ' ', u.apellido) AS empleado, 
+                p.fecha_pedido, 
+                e.nombre_estado, 
+                p.total, 
+                p.metodo_pago
             FROM pedidos p
             LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
             LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
@@ -39,12 +46,9 @@ class PedidoModel {
         const [rows] = await db.execute(`
             SELECT 
                 p.id_pedido AS id,
-                p.numero_pedido,
                 p.fecha_pedido,
                 p.total,
-                LOWER(e.nombre_estado) AS estado,
-                p.metodo_entrega,
-                p.direccion_entrega,
+                e.nombre_estado AS estado,
                 p.metodo_pago,
                 p.notas
             FROM pedidos p
@@ -139,7 +143,7 @@ class PedidoModel {
         try {
             await connection.beginTransaction();
             
-            const { id_cliente, id_usuario_cliente, id_usuario, items, total, metodo_pago, notas, direccion_entrega, metodo_entrega } = data;
+            const { id_cliente, id_usuario_cliente, id_usuario, items, total, metodo_pago, notas } = data;
             
             // Validar stock antes de crear pedido
             const productosInsuficientes = await this.validarStock(items);
@@ -149,9 +153,6 @@ class PedidoModel {
                     productos: productosInsuficientes 
                 };
             }
-            
-            // Generar número de pedido único
-            const numeroPedido = this.generarNumeroPedido();
             
             // Si no hay id_cliente pero hay id_usuario_cliente (rol cliente), crear cliente
             let clienteId = id_cliente;
@@ -189,9 +190,9 @@ class PedidoModel {
             
             // Insertar pedido
             const [result] = await connection.execute(`
-                INSERT INTO pedidos (id_cliente, id_usuario, numero_pedido, total, metodo_pago, notas, direccion_entrega, metodo_entrega)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [clienteId, id_usuario || null, numeroPedido, total, metodo_pago, notas, direccion_entrega, metodo_entrega]);
+                INSERT INTO pedidos (id_cliente, id_usuario, total, metodo_pago, notas)
+                VALUES (?, ?, ?, ?, ?)
+            `, [clienteId, id_usuario || null, total, metodo_pago, notas]);
 
             const pedidoId = result.insertId;
 
@@ -209,7 +210,7 @@ class PedidoModel {
             }
             
             await connection.commit();
-            return { id: pedidoId, numero_pedido: numeroPedido };
+            return { id: pedidoId };
             
         } catch (error) {
             await connection.rollback();
@@ -240,12 +241,9 @@ class PedidoModel {
         const [rows] = await db.execute(`
             SELECT 
                 p.id_pedido AS id,
-                p.numero_pedido,
                 p.fecha_pedido,
                 p.total,
-                LOWER(e.nombre_estado) AS estado,
-                p.metodo_entrega,
-                p.direccion_entrega,
+                e.nombre_estado AS estado,
                 p.metodo_pago,
                 p.notas
             FROM pedidos p
@@ -337,6 +335,141 @@ class PedidoModel {
         `, [estadoConfirmado[0].id_estado, pedidoId]);
         
         return result.affectedRows > 0;
+    }
+
+    // ==================== RF-4: SEGUIMIENTO DE ESTADO ====================
+    
+    // Obtener historial de estados de un pedido
+    static async getHistorialEstados(pedidoId) {
+        const [rows] = await db.execute(`
+            SELECT 
+                h.id_historial,
+                h.id_pedido,
+                e.nombre_estado AS estado,
+                h.notas,
+                h.fecha_cambio,
+                u.nombre AS usuario_nombre,
+                u.apellido AS usuario_apellido
+            FROM historial_estados_pedido h
+            INNER JOIN estados_pedido e ON h.id_estado = e.id_estado
+            LEFT JOIN usuarios u ON h.id_usuario = u.id_usuario
+            WHERE h.id_pedido = ?
+            ORDER BY h.fecha_cambio ASC
+        `, [pedidoId]);
+        
+        return rows;
+    }
+
+    // Obtener detalle completo de un pedido con historial
+    static async getDetalleConHistorial(pedidoId, userId = null) {
+        // Obtener información del pedido
+        const [pedido] = await db.execute(`
+            SELECT 
+                p.id_pedido,
+                p.id_cliente,
+                p.fecha_pedido,
+                p.total,
+                p.id_estado,
+                e.nombre_estado AS estado,
+                p.metodo_pago,
+                p.notas,
+                c.nombre AS nombre_cliente,
+                c.apellido AS apellido_cliente,
+                c.email AS email_cliente,
+                c.telefono AS telefono_cliente
+            FROM pedidos p
+            LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
+            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+            WHERE p.id_pedido = ?
+        `, [pedidoId]);
+
+        if (pedido.length === 0) {
+            return null;
+        }
+
+        const pedidoData = pedido[0];
+
+        // Si se proporciona userId (cliente), verificar que el pedido pertenece al usuario
+        if (userId) {
+            const [usuario] = await db.execute(
+                'SELECT email FROM usuarios WHERE id_usuario = ?',
+                [userId]
+            );
+            
+            if (usuario.length === 0) {
+                return null;
+            }
+
+            const [cliente] = await db.execute(
+                'SELECT id_cliente FROM clientes WHERE email = ?',
+                [usuario[0].email]
+            );
+
+            if (cliente.length === 0 || cliente[0].id_cliente !== pedidoData.id_cliente) {
+                return null;
+            }
+        }
+
+        // Obtener productos del pedido
+        const [productos] = await db.execute(`
+            SELECT 
+                dp.cantidad,
+                dp.precio_unitario,
+                dp.subtotal,
+                pr.nombre AS nombre_producto,
+                pr.imagen AS imagen_url,
+                pr.descripcion
+            FROM detalle_pedidos dp
+            INNER JOIN productos pr ON dp.id_producto = pr.id_producto
+            WHERE dp.id_pedido = ?
+        `, [pedidoId]);
+
+        // Obtener historial de estados
+        const historial = await this.getHistorialEstados(pedidoId);
+
+        return {
+            pedido: pedidoData,
+            productos,
+            historial
+        };
+    }
+
+    // Cambiar estado de un pedido (solo admin/empleado)
+    static async cambiarEstado(pedidoId, nuevoEstadoId, usuarioId, notas = null) {
+        const connection = await db.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+
+            // Actualizar estado del pedido
+            await connection.execute(`
+                UPDATE pedidos 
+                SET id_estado = ?, id_usuario = ?
+                WHERE id_pedido = ?
+            `, [nuevoEstadoId, usuarioId, pedidoId]);
+
+            // El trigger se encargará de insertar en historial_estados_pedido
+            // Pero si queremos agregar notas personalizadas, podemos actualizar el último registro
+            if (notas) {
+                await connection.execute(`
+                    UPDATE historial_estados_pedido
+                    SET notas = ?
+                    WHERE id_pedido = ? AND id_estado = ?
+                    ORDER BY fecha_cambio DESC
+                    LIMIT 1
+                `, [notas, pedidoId, nuevoEstadoId]);
+            }
+
+            await connection.commit();
+            return true;
+
+        } catch (error) {
+            await connection.rollback();
+            console.error('Error cambiando estado:', error);
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 }
 

@@ -14,7 +14,10 @@ const authenticateToken = async (req, res, next) => {
         
         // Verificar que el usuario aún existe y está activo
         const [rows] = await db.execute(
-            'SELECT id_usuario, nombre, apellido, email, id_rol FROM usuarios WHERE id_usuario = ? AND activo = TRUE',
+            `SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.id_rol, r.nombre_rol 
+             FROM usuarios u 
+             JOIN roles r ON u.id_rol = r.id_rol 
+             WHERE u.id_usuario = ? AND u.activo = TRUE`,
             [decoded.userId]
         );
 
@@ -25,7 +28,8 @@ const authenticateToken = async (req, res, next) => {
         req.user = {
             ...rows[0],
             userId: rows[0].id_usuario,
-            role: rows[0].id_rol  // Agregar alias para compatibilidad
+            role: rows[0].id_rol,  // Agregar alias para compatibilidad
+            rol: rows[0].nombre_rol  // Agregar nombre del rol
         };
         next();
     } catch (error) {

@@ -48,6 +48,23 @@ class ProductoController {
         try {
             const data = { ...req.body };
             
+            // Validar que no exista producto con el mismo nombre
+            const existeNombre = await ProductoModel.existsByNombre(data.nombre);
+            if (existeNombre) {
+                // Si hay error y se subió archivo, eliminarlo
+                if (req.file) {
+                    const filePath = path.join(__dirname, '../uploads', req.file.filename);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+                
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ya existe un producto con ese nombre'
+                });
+            }
+            
             // Si se subió una imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
@@ -91,6 +108,25 @@ class ProductoController {
                 });
             }
 
+            // Validar que no exista otro producto con el mismo nombre
+            if (data.nombre && data.nombre !== productoActual.nombre) {
+                const existeNombre = await ProductoModel.existsByNombre(data.nombre, id);
+                if (existeNombre) {
+                    // Si hay error y se subió archivo, eliminarlo
+                    if (req.file) {
+                        const filePath = path.join(__dirname, '../uploads', req.file.filename);
+                        if (fs.existsSync(filePath)) {
+                            fs.unlinkSync(filePath);
+                        }
+                    }
+                    
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Ya existe un producto con ese nombre'
+                    });
+                }
+            }
+
             // Si se subió nueva imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
@@ -107,7 +143,18 @@ class ProductoController {
                 data.imagen = productoActual.imagen;
             }
 
-            const updated = await ProductoModel.update(id, data);
+            // Asegurar que todos los campos tengan valores (usar los actuales si no vienen en el body)
+            const updateData = {
+                id_categoria: data.id_categoria || productoActual.id_categoria,
+                nombre: data.nombre || productoActual.nombre,
+                descripcion: data.descripcion !== undefined ? data.descripcion : productoActual.descripcion,
+                precio: data.precio !== undefined ? data.precio : productoActual.precio,
+                stock: data.stock !== undefined ? data.stock : productoActual.stock,
+                imagen: data.imagen,
+                activo: data.activo !== undefined ? data.activo : productoActual.activo
+            };
+
+            const updated = await ProductoModel.update(id, updateData);
 
             if (!updated) {
                 return res.status(404).json({
@@ -139,6 +186,15 @@ class ProductoController {
                 return res.status(404).json({
                     success: false,
                     message: 'Producto no encontrado'
+                });
+            }
+
+            // Verificar si tiene pedidos asociados
+            const tienePedidos = await ProductoModel.hasPedidos(id);
+            if (tienePedidos) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No se puede eliminar el producto porque tiene pedidos asociados. Puede desactivarlo en su lugar.'
                 });
             }
 

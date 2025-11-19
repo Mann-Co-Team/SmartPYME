@@ -14,11 +14,14 @@ import Register from './pages/public/Register';
 import Login from './pages/public/Login';
 import Checkout from './pages/public/Checkout';
 import MisPedidos from './pages/public/MisPedidos';
+import DetallePedido from './pages/public/DetallePedido';
 import AdminLogin from './pages/admin/Login.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import AdminProductos from './pages/admin/Productos.jsx';
 import AdminCategorias from './pages/admin/Categorias.jsx';
 import AdminPedidos from './pages/admin/Pedidos.jsx';
+import AdminDetallePedido from './pages/admin/DetallePedido.jsx';
+import AdminUsuarios from './pages/admin/Usuarios.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -55,6 +58,13 @@ function App() {
               </PublicLayout>
             } />
 
+            {/* RF-4: Detalle de Pedido - Ruta para clientes */}
+            <Route path="/pedidos/:id" element={
+              <PublicLayout>
+                <DetallePedido />
+              </PublicLayout>
+            } />
+
             {/* Login admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
@@ -66,6 +76,8 @@ function App() {
                 <Route path="productos" element={<AdminProductos />} />
                 <Route path="categorias" element={<AdminCategorias />} />
                 <Route path="pedidos" element={<AdminPedidos />} />
+                <Route path="pedidos/:id" element={<AdminDetallePedido />} />
+                <Route path="usuarios" element={<AdminUsuarios />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Route>

@@ -2,7 +2,7 @@ const app = require('./app');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
-const HOST = '127.0.0.1'; // Cambiado de 0.0.0.0 a 127.0.0.1 para evitar problemas de firewall
+const HOST = '0.0.0.0'; // Escuchar en todas las interfaces
 
 console.log('🔧 Intentando iniciar servidor...');
 console.log(`📌 Puerto configurado: ${PORT}`);

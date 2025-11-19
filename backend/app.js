@@ -72,6 +72,13 @@ try {
     console.error('❌ Error cargando rutas de settings:', error.message);
 }
 
+try {
+    app.use('/api/estados', require('./routes/estados.routes'));
+    console.log('✅ Rutas de estados cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de estados:', error.message);
+}
+
 // Ruta de estado de la API
 app.get('/api/status', (req, res) => {
     res.json({

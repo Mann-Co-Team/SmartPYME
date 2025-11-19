@@ -243,6 +243,82 @@ class PedidoController {
             });
         }
     }
+
+    // ==================== RF-4: SEGUIMIENTO DE ESTADO ====================
+    
+    // Obtener detalle completo de un pedido con historial de estados
+    static async getDetallePedido(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.role === 3 ? req.user.userId : null;
+            
+            console.log(`📋 Obteniendo detalle del pedido #${id} para usuario ${req.user.userId} (rol: ${req.user.role})`);
+            
+            const pedido = await PedidoModel.getDetalleConHistorial(id, userId);
+            
+            console.log(`📦 Resultado de getDetalleConHistorial:`, pedido ? 'Pedido encontrado' : 'Pedido NO encontrado');
+            
+            if (!pedido) {
+                console.log(`❌ Pedido #${id} no encontrado o sin permisos para userId: ${userId}`);
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Pedido no encontrado o no tienes permisos para verlo' 
+                });
+            }
+            
+            console.log(`✅ Enviando detalle del pedido #${id}`);
+            res.json({ success: true, data: pedido });
+            
+        } catch (error) {
+            console.error('❌ Error obteniendo detalle del pedido:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Error al obtener detalle del pedido',
+                error: error.message
+            });
+        }
+    }
+
+    // Cambiar estado de un pedido (solo admin/empleado)
+    static async cambiarEstado(req, res) {
+        try {
+            const { id } = req.params;
+            const { id_estado, notas } = req.body;
+
+            if (!id_estado) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'El id_estado es requerido' 
+                });
+            }
+
+            const result = await PedidoModel.cambiarEstado(
+                id, 
+                id_estado, 
+                req.user.userId, 
+                notas
+            );
+
+            if (result) {
+                res.json({ 
+                    success: true, 
+                    message: 'Estado del pedido actualizado exitosamente' 
+                });
+            } else {
+                res.status(500).json({ 
+                    success: false, 
+                    message: 'Error al cambiar el estado' 
+                });
+            }
+
+        } catch (error) {
+            console.error('Error cambiando estado:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Error al cambiar el estado del pedido' 
+            });
+        }
+    }
 }
 
 module.exports = PedidoController;

@@ -32,7 +32,7 @@ const authorize = (permission) => {
             });
         }
 
-        const userRole = req.user.nombre_rol || req.user.rol;
+        const userRole = (req.user.nombre_rol || req.user.rol || '').toLowerCase();
         const userPermissions = rolePermissions[userRole] || [];
 
         if (!userPermissions.includes(permission)) {

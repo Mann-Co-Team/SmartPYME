@@ -38,7 +38,7 @@ const MisPedidos = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/cancelar`, {
+      const response = await fetch(`http://localhost:3000/api/pedidos/${pedidoId}/cancelar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -67,7 +67,7 @@ const MisPedidos = () => {
     if (motivo === null) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/pedidos/${pedidoId}/solicitar-cancelacion`, {
+      const response = await fetch(`http://localhost:3000/api/pedidos/${pedidoId}/solicitar-cancelacion`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -225,7 +225,7 @@ const MisPedidos = () => {
                           <div className="flex items-center gap-3">
                             {producto.imagen && (
                               <img 
-                                src={`http://localhost:5000${producto.imagen}`} 
+                                src={`http://localhost:3000${producto.imagen}`} 
                                 alt={producto.producto}
                                 className="w-12 h-12 object-cover rounded"
                               />
@@ -263,6 +263,14 @@ const MisPedidos = () => {
 
                 {/* Botones de acción según el estado */}
                 <div className="mt-4 flex gap-2">
+                  {/* RF-4: Ver detalle del pedido */}
+                  <button
+                    onClick={() => navigate(`/pedidos/${pedido.id}`)}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Ver Detalle
+                  </button>
+
                   {/* OPCIÓN 1: Cancelación inmediata si está pendiente */}
                   {pedido.estado === 'pendiente' && (
                     <button
