@@ -24,8 +24,27 @@ export const ThemeProvider = ({ children }) => {
     min_order_amount: '0'
   });
   
+  // Estado de modo oscuro - inicia en false (modo claro)
+  const [darkMode, setDarkMode] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const hasLoadedRef = useRef(false);
+
+  // Cargar preferencia guardada al montar
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('darkMode');
+      if (saved !== null) {
+        const isDark = JSON.parse(saved);
+        setDarkMode(isDark);
+        console.log('📥 Preferencia cargada:', isDark ? 'OSCURO' : 'CLARO');
+      } else {
+        console.log('📥 No hay preferencia guardada, usando MODO CLARO');
+      }
+    } catch (error) {
+      console.error('❌ Error al leer darkMode:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (!hasLoadedRef.current) {
@@ -33,6 +52,36 @@ export const ThemeProvider = ({ children }) => {
       loadSettings();
     }
   }, []);
+
+  // Aplicar cambios cuando darkMode cambia
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (darkMode) {
+      root.classList.add('dark');
+      console.log('🌙 MODO OSCURO APLICADO');
+    } else {
+      root.classList.remove('dark');
+      console.log('☀️ MODO CLARO APLICADO');
+    }
+    
+    // Guardar en localStorage
+    try {
+      localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      console.log('💾 Preferencia guardada:', darkMode ? 'OSCURO' : 'CLARO');
+    } catch (error) {
+      console.error('❌ Error al guardar darkMode:', error);
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    console.log('🔄 TOGGLE llamado - Estado antes:', darkMode ? 'OSCURO' : 'CLARO');
+    setDarkMode(prev => {
+      const newValue = !prev;
+      console.log('🔄 TOGGLE cambiando a:', newValue ? 'OSCURO' : 'CLARO');
+      return newValue;
+    });
+  };
 
   const loadSettings = async () => {
     try {
@@ -63,7 +112,9 @@ export const ThemeProvider = ({ children }) => {
     settings,
     updateSettings,
     loadSettings,
-    loading
+    loading,
+    darkMode,
+    toggleDarkMode
   };
 
   return (

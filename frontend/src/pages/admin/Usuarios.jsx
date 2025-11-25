@@ -7,6 +7,7 @@ import {
     toggleActiveUsuario, 
     deleteUsuario 
 } from '../../services/usuarios';
+import { verifyPassword } from '../../services/auth';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { 
     PlusIcon, 
@@ -14,7 +15,8 @@ import {
     TrashIcon,
     XMarkIcon,
     CheckCircleIcon,
-    XCircleIcon
+    XCircleIcon,
+    LockClosedIcon
 } from '@heroicons/react/24/outline';
 
 const Usuarios = () => {
@@ -27,6 +29,9 @@ const Usuarios = () => {
     const [deletingUsuario, setDeletingUsuario] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [tenantInfo, setTenantInfo] = useState(null);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deletingInProgress, setDeletingInProgress] = useState(false);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -39,7 +44,35 @@ const Usuarios = () => {
 
     useEffect(() => {
         loadData();
+        loadTenantInfo();
     }, []);
+
+    const loadTenantInfo = () => {
+        try {
+            const tenant = JSON.parse(localStorage.getItem('tenant'));
+            setTenantInfo(tenant);
+        } catch (err) {
+            console.error('Error cargando info del tenant:', err);
+        }
+    };
+
+    const getPlanLimits = (plan) => {
+        const limits = {
+            basico: 5,
+            profesional: 20,
+            empresarial: null // null = ilimitado
+        };
+        return limits[plan] || 5;
+    };
+
+    const canAddMoreUsers = () => {
+        if (!tenantInfo) return false;
+        const limit = getPlanLimits(tenantInfo.plan);
+        if (limit === null) return true; // Ilimitado
+        // Solo contar admin y empleados para el límite (roles 1 y 2)
+        const staffCount = usuarios.filter(u => u.id_rol === 1 || u.id_rol === 2).length;
+        return staffCount < limit;
+    };
 
     const loadData = async () => {
         try {
@@ -141,21 +174,37 @@ const Usuarios = () => {
     const handleOpenDeleteConfirm = (usuario) => {
         setDeletingUsuario(usuario);
         setShowDeleteConfirm(true);
+        setDeletePassword('');
         setError(null);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = async (e) => {
+        e.preventDefault();
+        
+        if (!deletePassword) {
+            setError('Debes ingresar tu contraseña para confirmar');
+            return;
+        }
+
         try {
             setError(null);
+            setDeletingInProgress(true);
+
+            // Primero verificar la contraseña
+            await verifyPassword(deletePassword);
+
+            // Si la contraseña es correcta, eliminar usuario
             await deleteUsuario(deletingUsuario.id_usuario);
             setSuccess('Usuario eliminado exitosamente');
             setShowDeleteConfirm(false);
             setDeletingUsuario(null);
+            setDeletePassword('');
             loadData();
         } catch (error) {
             console.error('Error eliminando usuario:', error);
             setError(error.response?.data?.message || 'Error eliminando usuario');
-            setShowDeleteConfirm(false);
+        } finally {
+            setDeletingInProgress(false);
         }
     };
 
@@ -188,18 +237,61 @@ const Usuarios = () => {
     return (
         <div className="p-6">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <div>
+            <div className="flex justify-between items-start mb-6">
+                <div className="flex-1">
                     <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
                     <p className="text-gray-600 mt-1">Administra usuarios y asigna roles</p>
+                    
+                    {/* Indicador de Plan */}
+                    {tenantInfo && (
+                        <div className="mt-4 inline-flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                            <span className="text-2xl">
+                                {tenantInfo.plan === 'basico' ? '📦' : tenantInfo.plan === 'profesional' ? '⭐' : '👑'}
+                            </span>
+                            <div>
+                                <p className="text-sm font-semibold text-blue-900">
+                                    Plan {tenantInfo.plan.charAt(0).toUpperCase() + tenantInfo.plan.slice(1)}
+                                </p>
+                                <p className="text-sm text-blue-700">
+                                    👥 Staff: <span className="font-bold">{usuarios.filter(u => u.id_rol === 1 || u.id_rol === 2).length}</span>
+                                    {getPlanLimits(tenantInfo.plan) !== null && (
+                                        <> / {getPlanLimits(tenantInfo.plan)}</>
+                                    )}
+                                    {getPlanLimits(tenantInfo.plan) === null && <> (Ilimitado)</>}
+                                </p>
+                                <p className="text-xs text-blue-600">
+                                    👤 Clientes: <span className="font-bold">{usuarios.filter(u => u.id_rol === 3).length}</span> (ilimitados)
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                    <PlusIcon className="h-5 w-5" />
-                    Nuevo Usuario
-                </button>
+                
+                <div>
+                    {canAddMoreUsers() ? (
+                        <button
+                            onClick={() => handleOpenModal()}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            <PlusIcon className="h-5 w-5" />
+                            Nuevo Usuario
+                        </button>
+                    ) : (
+                        <div className="text-center">
+                            <button
+                                disabled
+                                className="flex items-center gap-2 bg-gray-300 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed"
+                                title="Has alcanzado el límite de usuarios de tu plan"
+                            >
+                                <PlusIcon className="h-5 w-5" />
+                                Límite Alcanzado
+                            </button>
+                            <p className="text-xs text-orange-600 mt-2 font-medium">
+                                ⚠️ Mejora tu plan para agregar más usuarios
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Mensajes */}
@@ -439,8 +531,14 @@ const Usuarios = () => {
             {showDeleteConfirm && deletingUsuario && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Confirmar Eliminación</h2>
-                        <p className="text-gray-600 mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <LockClosedIcon className="h-6 w-6 text-red-600" />
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900">Confirmar Eliminación</h2>
+                        </div>
+                        
+                        <p className="text-gray-600 mb-4">
                             ¿Estás seguro de que deseas eliminar al usuario{' '}
                             <span className="font-semibold">
                                 {deletingUsuario.nombre} {deletingUsuario.apellido}
@@ -449,23 +547,52 @@ const Usuarios = () => {
                         <p className="text-sm text-red-600 mb-6">
                             Esta acción no se puede deshacer.
                         </p>
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowDeleteConfirm(false);
-                                    setDeletingUsuario(null);
-                                }}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                            >
-                                Eliminar
-                            </button>
-                        </div>
+
+                        <form onSubmit={handleDelete}>
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Ingresa tu contraseña para confirmar *
+                                </label>
+                                <input
+                                    type="password"
+                                    value={deletePassword}
+                                    onChange={(e) => setDeletePassword(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Tu contraseña"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                    <p className="text-sm text-red-800">{error}</p>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowDeleteConfirm(false);
+                                        setDeletingUsuario(null);
+                                        setDeletePassword('');
+                                        setError(null);
+                                    }}
+                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                    disabled={deletingInProgress}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={deletingInProgress}
+                                >
+                                    {deletingInProgress ? 'Eliminando...' : 'Eliminar'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

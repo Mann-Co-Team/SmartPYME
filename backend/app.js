@@ -73,6 +73,13 @@ try {
 }
 
 try {
+    app.use('/api/tenants', require('./routes/tenants.routes'));
+    console.log('✅ Rutas de tenants cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de tenants:', error.message);
+}
+
+try {
     app.use('/api/estados', require('./routes/estados.routes'));
     console.log('✅ Rutas de estados cargadas');
 } catch (error) {
@@ -84,6 +91,48 @@ try {
     console.log('✅ Rutas de dashboard cargadas');
 } catch (error) {
     console.error('❌ Error cargando rutas de dashboard:', error.message);
+}
+
+try {
+    app.use('/api/password-recovery', require('./routes/passwordRecovery.routes'));
+    console.log('✅ Rutas de recuperación de contraseña cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de recuperación:', error.message);
+}
+
+try {
+    app.use('/api/reportes', require('./routes/reportes.routes'));
+    console.log('✅ Rutas de reportes cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de reportes:', error.message);
+}
+
+try {
+    app.use('/api/notificaciones', require('./routes/notificaciones.routes'));
+    console.log('✅ Rutas de notificaciones cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de notificaciones:', error.message);
+}
+
+try {
+    app.use('/api/clientes', require('./routes/clientes.routes'));
+    console.log('✅ Rutas de clientes cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de clientes:', error.message);
+}
+
+try {
+    app.use('/api/catalogo', require('./routes/catalogo.routes'));
+    console.log('✅ Rutas de catálogo público cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de catálogo:', error.message);
+}
+
+try {
+    app.use('/api/perfil', require('./routes/perfil.routes'));
+    console.log('✅ Rutas de perfil cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de perfil:', error.message);
 }
 
 // Ruta de estado de la API

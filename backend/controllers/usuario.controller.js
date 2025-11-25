@@ -1,10 +1,12 @@
 const UsuarioModel = require('../models/usuario.model');
+const bcrypt = require('bcryptjs');
 
 class UsuarioController {
     // Obtener todos los usuarios
     static async getAll(req, res) {
         try {
-            const usuarios = await UsuarioModel.getAll();
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const usuarios = await UsuarioModel.getAll(tenantId);
             res.json({
                 success: true,
                 data: usuarios
@@ -59,7 +61,28 @@ class UsuarioController {
                 });
             }
 
-            const userId = await UsuarioModel.create(userData);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
+
+            // Validar límite de usuarios según el plan (solo para admin y empleados)
+            if (userData.id_rol === 1 || userData.id_rol === 2) {
+                const currentUserCount = await UsuarioModel.countActiveUsersByTenant(tenantId);
+                const userLimit = await UsuarioModel.getTenantUserLimit(tenantId);
+
+                // Si hay límite (no es null = ilimitado) y se ha alcanzado
+                if (userLimit !== null && currentUserCount >= userLimit) {
+                    const planNames = {
+                        2: 'Básico (máx. 2 usuarios)',
+                        5: 'Profesional (máx. 5 usuarios)'
+                    };
+                    
+                    return res.status(400).json({
+                        success: false,
+                        message: `Has alcanzado el límite de usuarios para tu plan ${planNames[userLimit] || ''}. Actualiza tu plan para agregar más usuarios.`
+                    });
+                }
+            }
+
+            const userId = await UsuarioModel.create(userData, tenantId);
 
             res.status(201).json({
                 success: true,
@@ -79,7 +102,8 @@ class UsuarioController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const usuario = await UsuarioModel.getById(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const usuario = await UsuarioModel.getById(id, tenantId);
 
             if (!usuario) {
                 return res.status(404).json({
@@ -107,8 +131,9 @@ class UsuarioController {
             const { id } = req.params;
             const userData = req.body;
 
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
             // Verificar que el usuario existe
-            const usuarioActual = await UsuarioModel.getById(id);
+            const usuarioActual = await UsuarioModel.getById(id, tenantId);
             if (!usuarioActual) {
                 return res.status(404).json({
                     success: false,
@@ -139,7 +164,7 @@ class UsuarioController {
                 }
             }
 
-            const updated = await UsuarioModel.update(id, userData);
+            const updated = await UsuarioModel.update(id, userData, tenantId);
 
             res.json({
                 success: true,
@@ -167,7 +192,8 @@ class UsuarioController {
                 });
             }
 
-            const updated = await UsuarioModel.toggleActive(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const updated = await UsuarioModel.toggleActive(id, tenantId);
 
             if (!updated) {
                 return res.status(404).json({
@@ -193,6 +219,7 @@ class UsuarioController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
             // No permitir eliminar al propio usuario
             if (parseInt(id) === req.user.userId) {
@@ -202,7 +229,7 @@ class UsuarioController {
                 });
             }
 
-            const usuario = await UsuarioModel.getById(id);
+            const usuario = await UsuarioModel.getById(id, tenantId);
             if (!usuario) {
                 return res.status(404).json({
                     success: false,
@@ -210,7 +237,7 @@ class UsuarioController {
                 });
             }
 
-            const deleted = await UsuarioModel.delete(id);
+            const deleted = await UsuarioModel.delete(id, tenantId);
 
             res.json({
                 success: true,
@@ -218,6 +245,72 @@ class UsuarioController {
             });
         } catch (error) {
             console.error('Error eliminando usuario:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    }
+
+    // Cambiar contraseña del usuario autenticado
+    static async cambiarPassword(req, res) {
+        try {
+            const userId = req.user.userId;
+            const { passwordActual, passwordNueva, confirmarPassword } = req.body;
+
+            // Validaciones
+            if (!passwordActual || !passwordNueva || !confirmarPassword) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Todos los campos son requeridos'
+                });
+            }
+
+            if (passwordNueva.length < 6) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La nueva contraseña debe tener al menos 6 caracteres'
+                });
+            }
+
+            if (passwordNueva !== confirmarPassword) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Las contraseñas no coinciden'
+                });
+            }
+
+            // Obtener usuario con contraseña
+            const usuario = await UsuarioModel.getByIdWithPassword(userId);
+            if (!usuario) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Usuario no encontrado'
+                });
+            }
+
+            // Verificar contraseña actual
+            const passwordValida = await bcrypt.compare(passwordActual, usuario.password);
+            if (!passwordValida) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La contraseña actual es incorrecta'
+                });
+            }
+
+            // Hash de la nueva contraseña
+            const hashedPassword = await bcrypt.hash(passwordNueva, 10);
+
+            // Actualizar contraseña
+            await UsuarioModel.updatePassword(userId, hashedPassword);
+
+            res.json({
+                success: true,
+                message: 'Contraseña actualizada exitosamente'
+            });
+
+        } catch (error) {
+            console.error('Error cambiando contraseña:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'

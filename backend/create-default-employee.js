@@ -49,7 +49,7 @@ async function createDefaultEmployee() {
     console.log(`\n📋 CREDENCIALES DEL EMPLEADO:`);
     console.log(`Email: ${employeeData.email}`);
     console.log(`Contraseña: ${employeeData.password}`);
-    console.log(`\n🔗 Puede iniciar sesión en: http://localhost:5174/admin/login\n`);
+    console.log(`\n🔗 Puede iniciar sesión en: http://localhost:5173/admin/login\n`);
 
     process.exit(0);
   } catch (error) {

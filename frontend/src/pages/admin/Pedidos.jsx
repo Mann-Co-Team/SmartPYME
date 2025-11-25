@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // RF-7: Transiciones válidas de estados (deben coincidir con el backend)
 const TRANSICIONES_VALIDAS = {
@@ -12,6 +12,9 @@ const TRANSICIONES_VALIDAS = {
   7: []             // Cancelado -> ninguno (estado final)
 };
 
+// Pedidos activos: estados 1-5 (Pendiente, Confirmado, En Proceso, Listo, Enviado)
+const ESTADOS_ACTIVOS = [1, 2, 3, 4, 5];
+
 export default function AdminPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [estados, setEstados] = useState([]);
@@ -23,10 +26,21 @@ export default function AdminPedidos() {
   const [nuevoEstado, setNuevoEstado] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  useEffect(() => {
+    // Leer parámetro filter de la URL
+    const filterParam = searchParams.get('filter');
+    if (filterParam === 'activos') {
+      setFiltroEstado('activos');
+    } else if (filterParam && !isNaN(filterParam)) {
+      setFiltroEstado(filterParam);
+    }
+  }, [searchParams]);
 
   const cargarDatos = async () => {
     try {
@@ -157,6 +171,8 @@ export default function AdminPedidos() {
 
   const pedidosFiltrados = filtroEstado === 'todos'
     ? pedidos
+    : filtroEstado === 'activos'
+    ? pedidos.filter(p => ESTADOS_ACTIVOS.includes(p.id_estado))
     : pedidos.filter(p => p.id_estado === parseInt(filtroEstado));
 
   if (loading) {
@@ -178,7 +194,14 @@ export default function AdminPedidos() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
+          {filtroEstado === 'activos' && (
+            <p className="text-sm text-gray-600 mt-1">
+              📦 Mostrando solo pedidos activos (Pendiente a Enviado)
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">Filtrar:</label>
           <select
@@ -186,12 +209,15 @@ export default function AdminPedidos() {
             onChange={(e) => setFiltroEstado(e.target.value)}
             className="input"
           >
-            <option value="todos">Todos los estados</option>
-            {estados.map(estado => (
-              <option key={estado.id_estado} value={estado.id_estado}>
-                {estado.nombre_estado}
-              </option>
-            ))}
+            <option value="todos">📋 Todos los estados</option>
+            <option value="activos">🔄 Pedidos activos (Pendiente-Enviado)</option>
+            <optgroup label="Por estado específico:">
+              {estados.map(estado => (
+                <option key={estado.id_estado} value={estado.id_estado}>
+                  {estado.nombre_estado}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
       </div>

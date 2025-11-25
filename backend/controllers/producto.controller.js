@@ -5,7 +5,8 @@ const path = require('path');
 class ProductoController {
     static async getAll(req, res) {
         try {
-            const productos = await ProductoModel.getAll();
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const productos = await ProductoModel.getAll(tenantId);
             res.json({
                 success: true,
                 data: productos
@@ -22,7 +23,8 @@ class ProductoController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const producto = await ProductoModel.getById(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const producto = await ProductoModel.getById(id, tenantId);
 
             if (!producto) {
                 return res.status(404).json({
@@ -47,9 +49,10 @@ class ProductoController {
     static async create(req, res) {
         try {
             const data = { ...req.body };
+            const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
             
             // Validar que no exista producto con el mismo nombre
-            const existeNombre = await ProductoModel.existsByNombre(data.nombre);
+            const existeNombre = await ProductoModel.existsByNombre(data.nombre, tenantId);
             if (existeNombre) {
                 // Si hay error y se subió archivo, eliminarlo
                 if (req.file) {
@@ -70,7 +73,7 @@ class ProductoController {
                 data.imagen = `/uploads/${req.file.filename}`;
             }
 
-            const productoId = await ProductoModel.create(data);
+            const productoId = await ProductoModel.create(data, tenantId);
 
             res.status(201).json({
                 success: true,
@@ -98,9 +101,10 @@ class ProductoController {
         try {
             const { id } = req.params;
             const data = { ...req.body };
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
             // Obtener datos actuales para manejar imagen
-            const productoActual = await ProductoModel.getById(id);
+            const productoActual = await ProductoModel.getById(id, tenantId);
             if (!productoActual) {
                 return res.status(404).json({
                     success: false,
@@ -110,7 +114,7 @@ class ProductoController {
 
             // Validar que no exista otro producto con el mismo nombre
             if (data.nombre && data.nombre !== productoActual.nombre) {
-                const existeNombre = await ProductoModel.existsByNombre(data.nombre, id);
+                const existeNombre = await ProductoModel.existsByNombre(data.nombre, tenantId, id);
                 if (existeNombre) {
                     // Si hay error y se subió archivo, eliminarlo
                     if (req.file) {
@@ -154,7 +158,7 @@ class ProductoController {
                 activo: data.activo !== undefined ? data.activo : productoActual.activo
             };
 
-            const updated = await ProductoModel.update(id, updateData);
+            const updated = await ProductoModel.update(id, updateData, tenantId);
 
             if (!updated) {
                 return res.status(404).json({
@@ -179,9 +183,10 @@ class ProductoController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
             
             // Obtener datos para eliminar imagen
-            const producto = await ProductoModel.getById(id);
+            const producto = await ProductoModel.getById(id, tenantId);
             if (!producto) {
                 return res.status(404).json({
                     success: false,
@@ -190,7 +195,7 @@ class ProductoController {
             }
 
             // Verificar si tiene pedidos asociados
-            const tienePedidos = await ProductoModel.hasPedidos(id);
+            const tienePedidos = await ProductoModel.hasPedidos(id, tenantId);
             if (tienePedidos) {
                 return res.status(400).json({
                     success: false,
@@ -198,7 +203,7 @@ class ProductoController {
                 });
             }
 
-            const deleted = await ProductoModel.delete(id);
+            const deleted = await ProductoModel.delete(id, tenantId);
 
             if (!deleted) {
                 return res.status(404).json({
@@ -231,8 +236,9 @@ class ProductoController {
     static async toggleActive(req, res) {
         try {
             const { id } = req.params;
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
-            const updated = await ProductoModel.toggleActive(id);
+            const updated = await ProductoModel.toggleActive(id, tenantId);
 
             if (!updated) {
                 return res.status(404).json({

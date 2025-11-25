@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [metricas, setMetricas] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sinDatos, setSinDatos] = useState(false);
+  const [tenantInfo, setTenantInfo] = useState(null);
 
   useEffect(() => {
     cargarMetricas();
+    cargarInfoTenant();
   }, []);
+
+  const cargarInfoTenant = () => {
+    try {
+      const tenant = JSON.parse(localStorage.getItem('tenant'));
+      console.log('🔍 DEBUG Dashboard - Tenant desde localStorage:', tenant);
+      console.log('🔍 DEBUG Dashboard - Plan del tenant:', tenant?.plan);
+      setTenantInfo(tenant);
+    } catch (err) {
+      console.error('Error al cargar info del tenant:', err);
+    }
+  };
 
   const cargarMetricas = async () => {
     try {
@@ -69,6 +84,36 @@ export default function AdminDashboard() {
     );
   }
 
+  const getPlanLimits = (plan) => {
+    console.log('🔍 DEBUG getPlanLimits - Plan recibido:', plan, 'Tipo:', typeof plan);
+    const limits = {
+      basico: { usuarios: 1, productos: 50, pedidos: 100 },
+      profesional: { usuarios: 5, productos: 500, pedidos: 'Ilimitado' },
+      empresarial: { usuarios: 'Ilimitado', productos: 'Ilimitado', pedidos: 'Ilimitado' }
+    };
+    const result = limits[plan] || limits.basico;
+    console.log('🔍 DEBUG getPlanLimits - Límites devueltos:', result);
+    return result;
+  };
+
+  const getPlanColor = (plan) => {
+    const colors = {
+      basico: 'bg-gray-100 text-gray-800 border-gray-300',
+      profesional: 'bg-blue-100 text-blue-800 border-blue-300',
+      empresarial: 'bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-900 border-amber-300'
+    };
+    return colors[plan] || colors.basico;
+  };
+
+  const getPlanIcon = (plan) => {
+    const icons = {
+      basico: '📦',
+      profesional: '⭐',
+      empresarial: '👑'
+    };
+    return icons[plan] || '📦';
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -79,51 +124,147 @@ export default function AdminDashboard() {
         </button>
       </div>
 
+      {/* Widget de Plan */}
+      {tenantInfo && tenantInfo.plan && (
+        <div className={`card p-6 ${getPlanColor(tenantInfo.plan)} border-2`}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-3xl">{getPlanIcon(tenantInfo.plan)}</span>
+                <div>
+                  <h3 className="text-xl font-bold capitalize">{tenantInfo.nombre_empresa || 'Mi Empresa'}</h3>
+                  <p className="text-sm opacity-75">Plan {tenantInfo.plan.charAt(0).toUpperCase() + tenantInfo.plan.slice(1)}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div className="bg-white bg-opacity-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs opacity-75">Productos</p>
+                      <p className="text-lg font-bold">
+                        {metricas?.estadisticas?.productos_activos || 0} / {getPlanLimits(tenantInfo.plan).productos}
+                      </p>
+                    </div>
+                    <span className="text-2xl">🛍️</span>
+                  </div>
+                  {tenantInfo.plan === 'basico' && metricas?.estadisticas?.productos_activos && (
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-primary-500 h-2 rounded-full transition-all"
+                          style={{ width: `${(metricas.estadisticas.productos_activos / 50) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white bg-opacity-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs opacity-75">Usuarios</p>
+                      <p className="text-lg font-bold">
+                        {metricas?.estadisticas?.usuarios_activos || 0} / {getPlanLimits(tenantInfo.plan).usuarios}
+                      </p>
+                    </div>
+                    <span className="text-2xl">👥</span>
+                  </div>
+                </div>
+
+                <div className="bg-white bg-opacity-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs opacity-75">Pedidos/Mes</p>
+                      <p className="text-lg font-bold">
+                        {metricas?.estadisticas?.pedidos_activos || 0} / {getPlanLimits(tenantInfo.plan).pedidos}
+                      </p>
+                    </div>
+                    <span className="text-2xl">📦</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {tenantInfo.plan === 'basico' && (
+              <div className="ml-4">
+                <button className="btn-primary bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg">
+                  ⬆️ Mejorar Plan
+                </button>
+              </div>
+            )}
+            {tenantInfo.plan === 'profesional' && (
+              <div className="ml-4">
+                <button className="btn-primary bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg">
+                  👑 Upgrade a Empresarial
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tarjetas de métricas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <div 
+          onClick={() => navigate('/admin/reportes?periodo=dia')}
+          className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-blue-600">Ventas Hoy</p>
               <p className="text-2xl font-bold text-blue-900 mt-1">
                 {formatPrice(metricas.ventas.hoy)}
               </p>
+              <p className="text-xs text-blue-600 mt-1">👆 Ver detalle del día</p>
             </div>
             <div className="text-4xl">💰</div>
           </div>
         </div>
 
-        <div className="card p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <div 
+          onClick={() => navigate('/admin/reportes?periodo=mes')}
+          className="card p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200 cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600">Ventas del Mes</p>
               <p className="text-2xl font-bold text-green-900 mt-1">
                 {formatPrice(metricas.ventas.mes)}
               </p>
+              <p className="text-xs text-green-600 mt-1">👆 Ver detalle del mes</p>
             </div>
             <div className="text-4xl">📈</div>
           </div>
         </div>
 
-        <div className="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <div 
+          onClick={() => navigate('/admin/reportes?periodo=anio')}
+          className="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-purple-600">Ventas del Año</p>
               <p className="text-2xl font-bold text-purple-900 mt-1">
                 {formatPrice(metricas.ventas.anio)}
               </p>
+              <p className="text-xs text-purple-600 mt-1">👆 Ver detalle del año</p>
             </div>
             <div className="text-4xl">🎯</div>
           </div>
         </div>
 
-        <div className="card p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+        <div 
+          onClick={() => navigate('/admin/pedidos?filter=activos')}
+          className="card p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-orange-600">Pedidos Activos</p>
               <p className="text-2xl font-bold text-orange-900 mt-1">
                 {metricas.estadisticas.pedidos_activos}
               </p>
+              <p className="text-xs text-orange-600 mt-1">👆 Click para ver detalles</p>
             </div>
             <div className="text-4xl">📦</div>
           </div>
@@ -133,10 +274,21 @@ export default function AdminDashboard() {
       {/* Grid con 2 columnas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Pedidos por Estado</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">📊 Pedidos por Estado</h2>
+            <button
+              onClick={() => navigate('/admin/pedidos')}
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              Ver todos →
+            </button>
+          </div>
           <div className="space-y-3">
             {metricas.pedidosPorEstado.map((estado) => (
-              <div key={estado.id_estado} className="flex items-center justify-between">
+              <div 
+                key={estado.id_estado} 
+                className="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${
                     estado.id_estado === 1 ? 'bg-yellow-400' :
@@ -156,13 +308,25 @@ export default function AdminDashboard() {
         </div>
 
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">🏆 Productos Más Vendidos</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">🏆 Productos Más Vendidos</h2>
+            <button
+              onClick={() => navigate('/admin/productos')}
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              Ver todos →
+            </button>
+          </div>
           <div className="space-y-3">
             {metricas.productosTop.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
             ) : (
               metricas.productosTop.map((producto, index) => (
-                <div key={producto.id_producto} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div 
+                  key={producto.id_producto} 
+                  onClick={() => navigate(`/admin/productos?highlight=${producto.id_producto}`)}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 flex items-center justify-center bg-primary-500 text-white rounded-full font-bold text-sm">
                       {index + 1}
@@ -185,20 +349,28 @@ export default function AdminDashboard() {
 
       {/* Estadísticas adicionales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6 text-center">
+        <div 
+          onClick={() => navigate('/admin/pedidos?filter=6')}
+          className="card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="text-4xl mb-2">✅</div>
           <p className="text-sm text-gray-600">Pedidos Completados</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">
             {metricas.estadisticas.pedidos_completados}
           </p>
+          <p className="text-xs text-gray-500 mt-2">👆 Click para ver</p>
         </div>
 
-        <div className="card p-6 text-center">
+        <div 
+          onClick={() => navigate('/admin/productos')}
+          className="card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
+        >
           <div className="text-4xl mb-2">🛍️</div>
           <p className="text-sm text-gray-600">Productos Activos</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">
             {metricas.estadisticas.productos_activos}
           </p>
+          <p className="text-xs text-gray-500 mt-2">👆 Click para ver</p>
         </div>
 
         <div className="card p-6 text-center">
@@ -212,7 +384,15 @@ export default function AdminDashboard() {
 
       {/* Categorías */}
       <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">📂 Resumen por Categorías</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">📂 Resumen por Categorías</h2>
+          <button
+            onClick={() => navigate('/admin/categorias')}
+            className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            Gestionar categorías →
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
@@ -225,7 +405,7 @@ export default function AdminDashboard() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {metricas.categorias.map((cat) => (
-                <tr key={cat.id_categoria} className="hover:bg-gray-50">
+                <tr key={cat.id_categoria} className="hover:bg-gray-50 cursor-pointer">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{cat.nombre_categoria}</td>
                   <td className="px-4 py-3 text-sm text-gray-600 text-center">{cat.total_productos}</td>
                   <td className="px-4 py-3 text-sm text-gray-600 text-center">{cat.unidades_vendidas}</td>

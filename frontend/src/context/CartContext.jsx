@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const CartContext = createContext();
@@ -12,25 +13,51 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
+  const location = useLocation();
   const [items, setItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [currentTenant, setCurrentTenant] = useState(null);
 
-  // Cargar carrito del localStorage al iniciar
+  // Extraer tenant_slug de la URL
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error cargando carrito:', error);
+    const pathMatch = location.pathname.match(/\/tienda\/([^/]+)/);
+    const tenantSlug = pathMatch ? pathMatch[1] : null;
+    
+    // Si cambió el tenant, guardar carrito anterior y cargar el nuevo
+    if (tenantSlug !== currentTenant) {
+      // Guardar carrito del tenant anterior
+      if (currentTenant) {
+        localStorage.setItem(`cart_${currentTenant}`, JSON.stringify(items));
       }
+      
+      // Cargar carrito del nuevo tenant
+      if (tenantSlug) {
+        const savedCart = localStorage.getItem(`cart_${tenantSlug}`);
+        if (savedCart) {
+          try {
+            setItems(JSON.parse(savedCart));
+          } catch (error) {
+            console.error('Error cargando carrito:', error);
+            setItems([]);
+          }
+        } else {
+          setItems([]);
+        }
+      } else {
+        // No estamos en una tienda, vaciar carrito
+        setItems([]);
+      }
+      
+      setCurrentTenant(tenantSlug);
     }
-  }, []);
+  }, [location.pathname]);
 
-  // Guardar carrito en localStorage cuando cambie
+  // Guardar carrito en localStorage cuando cambie (solo si hay tenant activo)
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+    if (currentTenant) {
+      localStorage.setItem(`cart_${currentTenant}`, JSON.stringify(items));
+    }
+  }, [items, currentTenant]);
 
   const addItem = (product, quantity = 1) => {
     setItems(prev => {
@@ -95,7 +122,8 @@ export const CartProvider = ({ children }) => {
     getItemCount,
     isOpen,
     toggleCart,
-    setIsOpen
+    setIsOpen,
+    currentTenant
   };
 
   return (

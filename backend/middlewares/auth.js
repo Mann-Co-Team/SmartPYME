@@ -29,7 +29,9 @@ const authenticateToken = async (req, res, next) => {
             ...rows[0],
             userId: rows[0].id_usuario,
             role: rows[0].id_rol,  // Agregar alias para compatibilidad
-            rol: rows[0].nombre_rol  // Agregar nombre del rol
+            rol: rows[0].nombre_rol,  // Agregar nombre del rol
+            tenant_id: decoded.tenant_id,  // Pasar tenant_id del JWT
+            tenant_slug: decoded.tenant_slug  // Pasar tenant_slug del JWT
         };
         next();
     } catch (error) {

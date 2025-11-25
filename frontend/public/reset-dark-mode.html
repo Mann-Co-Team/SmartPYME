@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Modo Oscuro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        .success {
+            color: #10b981;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        .info {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Reset Modo Oscuro</h1>
+        <p class="info">Si el modo oscuro no funciona correctamente, usa estos botones para resetear:</p>
+        
+        <button onclick="resetToLight()">☀️ Forzar Modo Claro</button>
+        <button onclick="resetToDark()">🌙 Forzar Modo Oscuro</button>
+        <button onclick="clearStorage()">🗑️ Limpiar Todo</button>
+        
+        <div id="message"></div>
+        
+        <p style="margin-top: 2rem; font-size: 0.875rem; color: #6b7280;">
+            Después de hacer clic, regresa a la página principal.
+        </p>
+    </div>
+
+    <script>
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.className = 'success';
+            msg.textContent = text;
+            setTimeout(() => {
+                msg.textContent = '';
+            }, 3000);
+        }
+
+        function resetToLight() {
+            localStorage.setItem('darkMode', 'false');
+            document.documentElement.classList.remove('dark');
+            showMessage('✅ Modo claro activado! Recarga la página principal.');
+            console.log('Modo claro forzado');
+        }
+
+        function resetToDark() {
+            localStorage.setItem('darkMode', 'true');
+            document.documentElement.classList.add('dark');
+            showMessage('✅ Modo oscuro activado! Recarga la página principal.');
+            console.log('Modo oscuro forzado');
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('darkMode');
+            document.documentElement.classList.remove('dark');
+            showMessage('✅ Configuración limpiada! Recarga la página principal.');
+            console.log('localStorage limpiado');
+        }
+
+        // Mostrar estado actual
+        window.onload = () => {
+            const current = localStorage.getItem('darkMode');
+            console.log('Estado actual de darkMode:', current);
+        };
+    </script>
+</body>
+</html>

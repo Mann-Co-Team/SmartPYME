@@ -2,35 +2,36 @@ const express = require('express');
 const router = express.Router();
 const PedidoController = require('../controllers/pedido.controller');
 const { authenticateToken, requireRole } = require('../middlewares/auth');
+const { validateTenant } = require('../middlewares/tenant');
 
 // Leer todos los pedidos - roles admin y empleado O mis propios pedidos si soy cliente
-router.get('/', authenticateToken, PedidoController.getAll);
+router.get('/', authenticateToken, validateTenant, PedidoController.getAll);
 
 // Leer pedido por ID - roles admin, empleado y cliente
-router.get('/:id', authenticateToken, requireRole([1, 2, 3]), PedidoController.getById);
+router.get('/:id', authenticateToken, validateTenant, requireRole([1, 2, 3]), PedidoController.getById);
 
 // RF-4: Obtener detalle completo con historial de estados
-router.get('/:id/detalle', authenticateToken, requireRole([1, 2, 3]), PedidoController.getDetallePedido);
+router.get('/:id/detalle', authenticateToken, validateTenant, requireRole([1, 2, 3]), PedidoController.getDetallePedido);
 
 // Crear pedido - clientes (rol 3)
-router.post('/', authenticateToken, requireRole([3]), PedidoController.create);
+router.post('/', authenticateToken, validateTenant, requireRole([3]), PedidoController.create);
 
 // Cancelar pedido - cliente puede cancelar su propio pedido si está pendiente
-router.post('/:id/cancelar', authenticateToken, requireRole([3]), PedidoController.cancelarPedido);
+router.post('/:id/cancelar', authenticateToken, validateTenant, requireRole([3]), PedidoController.cancelarPedido);
 
 // Solicitar cancelación - cliente solicita cancelación (requiere aprobación)
-router.post('/:id/solicitar-cancelacion', authenticateToken, requireRole([3]), PedidoController.solicitarCancelacion);
+router.post('/:id/solicitar-cancelacion', authenticateToken, validateTenant, requireRole([3]), PedidoController.solicitarCancelacion);
 
 // Aprobar/Rechazar cancelación - admin/empleado
-router.post('/:id/aprobar-cancelacion', authenticateToken, requireRole([1, 2]), PedidoController.aprobarCancelacion);
+router.post('/:id/aprobar-cancelacion', authenticateToken, validateTenant, requireRole([1, 2]), PedidoController.aprobarCancelacion);
 
 // RF-4: Cambiar estado de pedido - admin/empleado
-router.post('/:id/cambiar-estado', authenticateToken, requireRole([1, 2]), PedidoController.cambiarEstado);
+router.post('/:id/cambiar-estado', authenticateToken, validateTenant, requireRole([1, 2]), PedidoController.cambiarEstado);
 
 // Actualizar estado pedido - roles admin y empleado
-router.patch('/:id', authenticateToken, requireRole([1, 2]), PedidoController.update);
+router.patch('/:id', authenticateToken, validateTenant, requireRole([1, 2]), PedidoController.update);
 
 // Eliminar pedido - roles admin
-router.delete('/:id', authenticateToken, requireRole([1]), PedidoController.delete);
+router.delete('/:id', authenticateToken, validateTenant, requireRole([1]), PedidoController.delete);
 
 module.exports = router;

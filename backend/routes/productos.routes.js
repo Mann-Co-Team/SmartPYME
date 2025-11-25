@@ -3,18 +3,28 @@ const router = express.Router();
 const ProductoController = require('../controllers/producto.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
+const { validateTenant } = require('../middlewares/tenant');
 const upload = require('../config/multer');
 const { createProducto, updateProducto } = require('../validators/producto.validator');
 
-// Obtener todos los productos - PÚBLICO (sin autenticación)
-router.get('/', ProductoController.getAll);
+// Obtener todos los productos - Requiere autenticación para panel admin
+router.get('/',
+    authenticateToken,
+    validateTenant,
+    ProductoController.getAll
+);
 
-// Obtener producto por ID - PÚBLICO
-router.get('/:id', ProductoController.getById);
+// Obtener producto por ID - Requiere autenticación
+router.get('/:id',
+    authenticateToken,
+    validateTenant,
+    ProductoController.getById
+);
 
 // Crear producto - admin y empleados
 router.post('/',
     authenticateToken,
+    validateTenant,
     authorize('manage_products'),
     upload.single('imagen'),
     createProducto,
@@ -24,6 +34,7 @@ router.post('/',
 // Actualizar producto
 router.put('/:id',
     authenticateToken,
+    validateTenant,
     authorize('manage_products'),
     upload.single('imagen'),
     updateProducto,
@@ -33,6 +44,7 @@ router.put('/:id',
 // Eliminar producto - solo admin
 router.delete('/:id',
     authenticateToken,
+    validateTenant,
     authorize('delete_products'),
     ProductoController.delete
 );
@@ -40,6 +52,7 @@ router.delete('/:id',
 // Cambiar estado activo/inactivo
 router.patch('/:id/toggle-active',
     authenticateToken,
+    validateTenant,
     authorize('manage_products'),
     ProductoController.toggleActive
 );

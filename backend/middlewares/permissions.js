@@ -5,15 +5,19 @@ const rolePermissions = {
         'manage_orders',
         'manage_categories',
         'view_dashboard',
+        'view_reports',
         'manage_settings',
         'delete_products',
-        'delete_orders'
+        'delete_orders',
+        'manage_notifications'
     ],
     'empleado': [
         'manage_products',
         'manage_orders',
         'manage_categories',
-        'view_dashboard'
+        'view_dashboard',
+        'view_reports',
+        'manage_notifications'
     ],
     'cliente': [
         'create_order',

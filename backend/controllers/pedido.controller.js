@@ -1,15 +1,18 @@
 const PedidoModel = require('../models/pedido.model');
+const NotificacionModel = require('../models/notificaciones.model');
+const EmailService = require('../services/email.service');
 
 class PedidoController {
     static async getAll(req, res) {
         try {
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
             // Si es cliente (rol 3), solo mostrar sus propios pedidos
             if (req.user.role === 3) {
-                const pedidos = await PedidoModel.getByUserId(req.user.userId);
+                const pedidos = await PedidoModel.getByUserId(req.user.userId, tenantId);
                 res.json({ success: true, data: pedidos });
             } else {
                 // Admin y empleados ven todos los pedidos
-                const pedidos = await PedidoModel.getAll();
+                const pedidos = await PedidoModel.getAll(tenantId);
                 res.json({ success: true, data: pedidos });
             }
         } catch (error) {
@@ -21,7 +24,8 @@ class PedidoController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const pedido = await PedidoModel.getById(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const pedido = await PedidoModel.getById(id, tenantId);
             if (!pedido) {
                 return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
             }
@@ -35,25 +39,102 @@ class PedidoController {
     static async create(req, res) {
         try {
             console.log('📦 Creando pedido con datos:', JSON.stringify(req.body, null, 2));
-            const pedidoData = await PedidoModel.create(req.body);
             
-            // Simular envío de correo con número de pedido
-            console.log(`
-╔══════════════════════════════════════════════════════════════╗
-║               📧 NOTIFICACIÓN DE PEDIDO                      ║
-╠══════════════════════════════════════════════════════════════╣
-║ Número de Pedido: ${pedidoData.numero_pedido}                            ║
-║ Cliente ID: ${req.body.id_cliente}                                          ║
-║ Total: $${req.body.total.toFixed(2)}                                        ║
-║ Método de Entrega: ${req.body.metodo_entrega || 'No especificado'}         ║
-║ Dirección: ${req.body.direccion_entrega || 'No especificada'}              ║
-╚══════════════════════════════════════════════════════════════╝
-            `);
+            // Si el usuario es un cliente (rol 3), agregar su id_usuario como id_usuario_cliente
+            const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
+            const pedidoData = {
+                ...req.body,
+                id_tenant: tenantId,
+                id_usuario_cliente: req.user.role === 3 ? req.user.userId : undefined,
+                id_usuario: req.user.userId
+            };
+            
+            const pedidoCreado = await PedidoModel.create(pedidoData);
+            
+            // Enviar email y crear notificación para admins
+            try {
+                // Obtener información del cliente
+                const db = require('../config/db');
+                const [clientes] = await db.execute(
+                    'SELECT * FROM usuarios WHERE id_usuario = ?',
+                    [req.user.userId]
+                );
+                const cliente = clientes[0] || { nombre: 'Cliente', email: '' };
+
+                // Enviar email a admins
+                await EmailService.sendNewOrderEmail(
+                    {
+                        id_pedido: pedidoCreado.numero_pedido,
+                        total: req.body.total,
+                        metodo_pago: req.body.metodo_pago || 'No especificado',
+                        tipo_entrega: req.body.metodo_entrega,
+                        direccion_entrega: req.body.direccion_entrega,
+                        fecha_pedido: new Date(),
+                        notas: req.body.notas
+                    },
+                    cliente
+                );
+
+                // Crear notificación in-app para admins/empleados
+                await NotificacionModel.createForAdminsAndEmployees(
+                    'nuevo_pedido',
+                    `Nuevo pedido #${pedidoCreado.numero_pedido}`,
+                    `Cliente: ${cliente.nombre} - Total: $${parseFloat(req.body.total).toLocaleString('es-CL')}`,
+                    pedidoCreado.id,
+                    'pedido',
+                    tenantId
+                );
+
+                console.log(`✅ Notificaciones enviadas para pedido #${pedidoCreado.numero_pedido}`);
+
+                // Verificar si hay productos agotados (stock = 0)
+                if (pedidoCreado.productosAgotados && pedidoCreado.productosAgotados.length > 0) {
+                    for (const producto of pedidoCreado.productosAgotados) {
+                        // Enviar email de stock agotado
+                        await EmailService.sendLowStockEmail(producto, 0);
+
+                        // Crear notificación de stock agotado para admins/empleados
+                        await NotificacionModel.createForAdminsAndEmployees(
+                            'stock_agotado',
+                            `🚫 Stock agotado: ${producto.nombre}`,
+                            `El producto se ha quedado sin stock. Reponer urgente.`,
+                            producto.id_producto,
+                            'producto',
+                            tenantId
+                        );
+
+                        console.log(`🚫 Alerta de stock agotado enviada para: ${producto.nombre}`);
+                    }
+                }
+
+                // Verificar si hay productos con stock bajo (1-5 unidades)
+                if (pedidoCreado.productosConStockBajo && pedidoCreado.productosConStockBajo.length > 0) {
+                    for (const producto of pedidoCreado.productosConStockBajo) {
+                        // Enviar email de stock bajo
+                        await EmailService.sendLowStockEmail(producto, producto.stock);
+
+                        // Crear notificación para admins/empleados
+                        await NotificacionModel.createForAdminsAndEmployees(
+                            'stock_critico',
+                            `⚠️ Stock bajo: ${producto.nombre}`,
+                            `Solo quedan ${producto.stock} unidades`,
+                            producto.id_producto,
+                            'producto',
+                            tenantId
+                        );
+
+                        console.log(`⚠️ Alerta de stock bajo enviada para: ${producto.nombre}`);
+                    }
+                }
+            } catch (notifError) {
+                console.error('⚠️ Error enviando notificaciones:', notifError.message);
+                // No fallar la creación del pedido si las notificaciones fallan
+            }
             
             res.status(201).json({ 
                 success: true, 
                 message: 'Pedido creado exitosamente', 
-                data: pedidoData
+                data: pedidoCreado
             });
         } catch (error) {
             console.error('Error creando pedido:', error);
@@ -82,7 +163,8 @@ class PedidoController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updated = await PedidoModel.update(id, req.body);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const updated = await PedidoModel.update(id, req.body, tenantId);
             if (!updated) {
                 return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
             }
@@ -95,7 +177,8 @@ class PedidoController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deleted = await PedidoModel.delete(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const deleted = await PedidoModel.delete(id, tenantId);
             if (!deleted) {
                 return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
             }
@@ -302,6 +385,52 @@ class PedidoController {
             );
 
             if (result) {
+                // Enviar email y notificación de cambio de estado
+                try {
+                    const db = require('../config/db');
+                    
+                    // Obtener info del pedido y cliente
+                    const [pedidos] = await db.execute(`
+                        SELECT p.*, u.nombre, u.email, ep.nombre_estado
+                        FROM pedidos p
+                        JOIN usuarios u ON p.id_cliente = u.id_usuario
+                        JOIN estados_pedido ep ON p.id_estado = ep.id_estado
+                        WHERE p.id_pedido = ?
+                    `, [id]);
+
+                    if (pedidos.length > 0) {
+                        const pedido = pedidos[0];
+                        const cliente = {
+                            nombre: pedido.nombre,
+                            email: pedido.email
+                        };
+
+                        // Enviar email al cliente
+                        await EmailService.sendOrderStatusEmail(
+                            {
+                                id_pedido: id,
+                                total: pedido.total,
+                                fecha_pedido: pedido.fecha_pedido
+                            },
+                            cliente,
+                            pedido.nombre_estado
+                        );
+
+                        // Crear notificación para admins/empleados
+                        await NotificacionModel.createForAdminsAndEmployees(
+                            'cambio_estado',
+                            `Pedido #${id} - ${pedido.nombre_estado}`,
+                            `El pedido cambió a estado: ${pedido.nombre_estado}`,
+                            id,
+                            'pedido'
+                        );
+
+                        console.log(`✅ Notificaciones enviadas para cambio de estado del pedido #${id}`);
+                    }
+                } catch (notifError) {
+                    console.error('⚠️ Error enviando notificaciones:', notifError.message);
+                }
+
                 res.json({ 
                     success: true, 
                     message: 'Estado del pedido actualizado exitosamente' 

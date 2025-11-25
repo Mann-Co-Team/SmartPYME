@@ -5,7 +5,8 @@ const path = require('path');
 class CategoriaController {
     static async getAll(req, res) {
         try {
-            const categorias = await CategoriaModel.getAll();
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const categorias = await CategoriaModel.getAll(tenantId);
             res.json({
                 success: true,
                 data: categorias
@@ -22,7 +23,8 @@ class CategoriaController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const categoria = await CategoriaModel.getById(id);
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const categoria = await CategoriaModel.getById(id, tenantId);
 
             if (!categoria) {
                 return res.status(404).json({
@@ -47,13 +49,14 @@ class CategoriaController {
     static async create(req, res) {
         try {
             const data = { ...req.body };
+            const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
             
             // Si se subió una imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
             }
 
-            const categoriaId = await CategoriaModel.create(data);
+            const categoriaId = await CategoriaModel.create(data, tenantId);
 
             res.status(201).json({
                 success: true,
@@ -81,9 +84,10 @@ class CategoriaController {
         try {
             const { id } = req.params;
             const data = { ...req.body };
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
             // Obtener datos actuales para manejar imagen
-            const categoriaActual = await CategoriaModel.getById(id);
+            const categoriaActual = await CategoriaModel.getById(id, tenantId);
             if (!categoriaActual) {
                 return res.status(404).json({
                     success: false,
@@ -107,7 +111,7 @@ class CategoriaController {
                 data.imagen = categoriaActual.imagen;
             }
 
-            const updated = await CategoriaModel.update(id, data);
+            const updated = await CategoriaModel.update(id, data, tenantId);
 
             if (!updated) {
                 return res.status(404).json({
@@ -132,9 +136,10 @@ class CategoriaController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
             
             // Obtener datos para eliminar imagen
-            const categoria = await CategoriaModel.getById(id);
+            const categoria = await CategoriaModel.getById(id, tenantId);
             if (!categoria) {
                 return res.status(404).json({
                     success: false,
@@ -142,7 +147,7 @@ class CategoriaController {
                 });
             }
 
-            const deleted = await CategoriaModel.delete(id);
+            const deleted = await CategoriaModel.delete(id, tenantId);
 
             if (!deleted) {
                 return res.status(404).json({
@@ -175,8 +180,9 @@ class CategoriaController {
     static async toggleActive(req, res) {
         try {
             const { id } = req.params;
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
-            const updated = await CategoriaModel.toggleActive(id);
+            const updated = await CategoriaModel.toggleActive(id, tenantId);
 
             if (!updated) {
                 return res.status(404).json({

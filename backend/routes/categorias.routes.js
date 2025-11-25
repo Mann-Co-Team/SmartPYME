@@ -3,18 +3,28 @@ const router = express.Router();
 const CategoriaController = require('../controllers/categoria.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
+const { validateTenant } = require('../middlewares/tenant');
 const upload = require('../config/multer');
 const { createCategoria, updateCategoria } = require('../validators/categoria.validator');
 
-// Obtener todas las categorías - PÚBLICO (sin autenticación)
-router.get('/', CategoriaController.getAll);
+// Obtener todas las categorías - Requiere autenticación para panel admin
+router.get('/',
+    authenticateToken,
+    validateTenant,
+    CategoriaController.getAll
+);
 
-// Obtener categoría por ID - PÚBLICO
-router.get('/:id', CategoriaController.getById);
+// Obtener categoría por ID - Requiere autenticación
+router.get('/:id',
+    authenticateToken,
+    validateTenant,
+    CategoriaController.getById
+);
 
 // Crear categoría - solo admin y empleados
 router.post('/', 
     authenticateToken,
+    validateTenant,
     authorize('manage_categories'),
     upload.single('imagen'),
     createCategoria,
@@ -24,6 +34,7 @@ router.post('/',
 // Actualizar categoría
 router.put('/:id',
     authenticateToken,
+    validateTenant,
     authorize('manage_categories'),
     upload.single('imagen'),
     updateCategoria,
@@ -33,6 +44,7 @@ router.put('/:id',
 // Eliminar categoría - solo admin
 router.delete('/:id',
     authenticateToken,
+    validateTenant,
     authorize('manage_categories'),
     CategoriaController.delete
 );
@@ -40,6 +52,7 @@ router.delete('/:id',
 // Cambiar estado activo/inactivo
 router.patch('/:id/toggle-active',
     authenticateToken,
+    validateTenant,
     authorize('manage_categories'),
     CategoriaController.toggleActive
 );

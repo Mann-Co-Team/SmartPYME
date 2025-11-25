@@ -60,7 +60,7 @@ El sistema debe permitir a cualquier visitante visualizar el catálogo completo 
 ## 🎯 Flujo de Interacción Implementado
 
 ### Caso 1: Usuario visita el catálogo
-1. **Usuario:** Ingresa a la plataforma (http://localhost:5174)
+1. **Usuario:** Ingresa a la plataforma (http://localhost:5173)
 2. **Sistema:** Presenta listado de productos con nombre, imagen, descripción, precio, categoría y stock
 3. **Usuario:** Visualiza productos disponibles
 
@@ -211,7 +211,7 @@ const loadData = async () => {
 ## 🧪 Casos de Prueba
 
 ### ✅ Prueba 1: Visualización Completa
-- **Acción:** Acceder a http://localhost:5174
+- **Acción:** Acceder a http://localhost:5173
 - **Resultado Esperado:** Ver todos los productos con nombre, imagen, precio, categoría, stock
 - **Estado:** ✅ PASS
 

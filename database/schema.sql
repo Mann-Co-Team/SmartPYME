@@ -83,8 +83,10 @@ CREATE TABLE estados_pedido (
 -- Crear tabla de pedidos
 CREATE TABLE pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
-    id_cliente INT NOT NULL,
-    id_usuario INT, -- Usuario que procesó el pedido
+    numero_pedido VARCHAR(50) UNIQUE NOT NULL,
+    id_tenant INT NOT NULL,
+    id_cliente INT NULL, -- Opcional, para mantener compatibilidad con datos históricos
+    id_usuario INT, -- Usuario que realizó/procesó el pedido (unificado con tabla usuarios)
     fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
     id_estado INT NOT NULL DEFAULT 1,
     total DECIMAL(10,2) NOT NULL,
@@ -92,7 +94,7 @@ CREATE TABLE pedidos (
     notas TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY (id_tenant) REFERENCES tenants(id_tenant),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
     FOREIGN KEY (id_estado) REFERENCES estados_pedido(id_estado)
 );

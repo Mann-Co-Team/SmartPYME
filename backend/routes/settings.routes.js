@@ -3,6 +3,7 @@ const router = express.Router();
 const SettingsController = require('../controllers/settings.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
+const { validateTenant } = require('../middlewares/tenant');
 
 // Obtener configuraciones públicas (sin autenticación)
 router.get('/public/all', SettingsController.getAll);
@@ -10,6 +11,7 @@ router.get('/public/all', SettingsController.getAll);
 // Obtener todas las configuraciones - admin solamente
 router.get('/', 
     authenticateToken,
+    validateTenant,
     authorize('manage_settings'),
     SettingsController.getAll
 );
@@ -17,6 +19,7 @@ router.get('/',
 // Obtener configuración específica
 router.get('/:key',
     authenticateToken,
+    validateTenant,
     authorize('manage_settings'),
     SettingsController.getByKey
 );
@@ -24,6 +27,7 @@ router.get('/:key',
 // Actualizar configuración específica
 router.put('/:key',
     authenticateToken,
+    validateTenant,
     authorize('manage_settings'),
     SettingsController.updateSetting
 );
@@ -31,6 +35,7 @@ router.put('/:key',
 // Actualizar múltiples configuraciones
 router.put('/',
     authenticateToken,
+    validateTenant,
     authorize('manage_settings'),
     SettingsController.updateMultiple
 );

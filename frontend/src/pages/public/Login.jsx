@@ -110,18 +110,9 @@ const Login = () => {
 
             {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Contraseña
-                </label>
-                <button
-                  type="button"
-                  onClick={() => toast.info('Funcionalidad de recuperación de contraseña próximamente')}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Contraseña
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <LockClosedIcon className="h-5 w-5 text-gray-400" />
@@ -138,6 +129,19 @@ const Login = () => {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Link de recuperación de contraseña */}
+          <div className="text-center">
+            <Link 
+              to="/olvide-password" 
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 hover:underline"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
 
           {/* Botón submit */}

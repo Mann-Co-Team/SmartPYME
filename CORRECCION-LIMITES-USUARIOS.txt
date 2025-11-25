@@ -1,0 +1,230 @@
+════════════════════════════════════════════════════════════════════════════════
+🔧 CORRECCIÓN: DIFERENCIACIÓN DE USUARIOS STAFF VS CLIENTES
+════════════════════════════════════════════════════════════════════════════════
+
+📅 Fecha: 25 de Noviembre de 2025
+🎯 Objetivo: Diferenciar correctamente usuarios admin/empleados de clientes en límites
+
+════════════════════════════════════════════════════════════════════════════════
+❌ PROBLEMA IDENTIFICADO
+════════════════════════════════════════════════════════════════════════════════
+
+El sistema contaba TODOS los usuarios (admin, empleados Y clientes) para el límite
+del plan, cuando debería contar solo admin y empleados.
+
+Ejemplo en Plan Básico:
+  ❌ ANTES: "4 usuarios de 1" (contaba 1 admin + 1 empleado + 2 clientes = 4)
+  ✅ AHORA: "2 staff de 5" (cuenta solo 1 admin + 1 empleado = 2)
+
+════════════════════════════════════════════════════════════════════════════════
+✅ SOLUCIÓN IMPLEMENTADA
+════════════════════════════════════════════════════════════════════════════════
+
+1. BACKEND - Query checkLimits() Corregido
+   Archivo: backend/models/tenant.model.js
+   
+   ANTES:
+   ```sql
+   COUNT(DISTINCT u.id_usuario) as usuarios_actuales
+   ```
+   
+   DESPUÉS:
+   ```sql
+   COUNT(DISTINCT CASE WHEN u.id_rol IN (1, 2) THEN u.id_usuario END) as usuarios_actuales,
+   COUNT(DISTINCT CASE WHEN u.id_rol = 3 THEN u.id_usuario END) as clientes_actuales
+   ```
+   
+   Resultado: Ahora devuelve contadores separados
+
+2. BACKEND - Middleware checkTenantLimit Mejorado
+   Archivo: backend/middlewares/tenant.js
+   
+   ANTES: Validaba límite para cualquier usuario
+   
+   DESPUÉS:
+   ```javascript
+   // Solo validar límite si se está creando admin/empleado (roles 1 o 2)
+   const id_rol = req.body.id_rol;
+   if (id_rol && (id_rol === 1 || id_rol === 2) && limits.limite_usuarios_alcanzado) {
+       return res.status(403).json({
+           message: 'Límite de administradores/empleados alcanzado...'
+       });
+   }
+   ```
+   
+   Resultado: Clientes (rol 3) no afectan el límite
+
+3. BACKEND - Middleware Agregado a Ruta
+   Archivo: backend/routes/usuarios.routes.js
+   
+   ANTES:
+   ```javascript
+   router.post('/', authorize('manage_users'), createUsuario, UsuarioController.create);
+   ```
+   
+   DESPUÉS:
+   ```javascript
+   router.post('/', authorize('manage_users'), checkTenantLimit('usuarios'), createUsuario, UsuarioController.create);
+   ```
+   
+   Resultado: Valida límite antes de crear usuario
+
+4. FRONTEND - Límites de Planes Corregidos
+   Archivo: frontend/src/pages/admin/Settings.jsx
+   
+   ANTES:
+   ```javascript
+   basico: { usuarios: 1, productos: 50 }
+   profesional: { usuarios: 5, productos: 500 }
+   ```
+   
+   DESPUÉS:
+   ```javascript
+   basico: { usuarios: 5, productos: 100 }
+   profesional: { usuarios: 20, productos: 500 }
+   ```
+
+5. FRONTEND - UI Clarificada
+   Archivo: frontend/src/pages/admin/Settings.jsx
+   
+   CAMBIOS:
+   - Etiqueta: "👥 Usuarios" → "👥 Staff"
+   - Agregado: tooltip "Límite de administradores y empleados"
+   - Agregado: subtexto "Admin/Empleados"
+
+6. FRONTEND - Gestión de Usuarios Actualizada
+   Archivo: frontend/src/pages/admin/Usuarios.jsx
+   
+   ANTES:
+   ```javascript
+   const canAddMoreUsers = () => {
+       return usuarios.length < limit;
+   }
+   ```
+   
+   DESPUÉS:
+   ```javascript
+   const canAddMoreUsers = () => {
+       const staffCount = usuarios.filter(u => u.id_rol === 1 || u.id_rol === 2).length;
+       return staffCount < limit;
+   }
+   ```
+   
+   UI MEJORADA:
+   ```
+   👥 Staff: 2 / 5
+   👤 Clientes: 2 (ilimitados)
+   ```
+
+════════════════════════════════════════════════════════════════════════════════
+📊 LÍMITES POR PLAN (CORREGIDOS)
+════════════════════════════════════════════════════════════════════════════════
+
+PLAN BÁSICO:
+  👥 Staff (Admin/Empleados): 5
+  👤 Clientes: ∞ ilimitados
+  📦 Productos: 100
+  📋 Pedidos: 100/mes
+
+PLAN PROFESIONAL:
+  👥 Staff (Admin/Empleados): 20
+  👤 Clientes: ∞ ilimitados
+  📦 Productos: 500
+  📋 Pedidos: ∞ ilimitados
+
+PLAN EMPRESARIAL:
+  👥 Staff (Admin/Empleados): ∞ ilimitados
+  👤 Clientes: ∞ ilimitados
+  📦 Productos: ∞ ilimitados
+  📋 Pedidos: ∞ ilimitados
+
+════════════════════════════════════════════════════════════════════════════════
+🧪 VERIFICACIÓN
+════════════════════════════════════════════════════════════════════════════════
+
+TENANT: pasteleria-dulce-sabor (ID: 18)
+PLAN: básico
+
+USUARIOS:
+  👑 Admin: 1
+  👨‍💼 Empleados: 1
+  👤 Clientes: 2
+  
+CONTEO PARA LÍMITE:
+  ✅ Staff: 2 de 5 (40% usado)
+  ✅ Clientes: 2 (no cuentan para límite)
+
+RESPUESTA API checkLimits():
+  ```json
+  {
+    "usuarios_actuales": 2,        ← Solo admin/empleados
+    "max_usuarios": 5,
+    "limite_usuarios_alcanzado": 0,
+    "clientes_actuales": 2         ← Contador separado
+  }
+  ```
+
+════════════════════════════════════════════════════════════════════════════════
+📝 ARCHIVOS MODIFICADOS
+════════════════════════════════════════════════════════════════════════════════
+
+✅ backend/models/tenant.model.js
+   - Query checkLimits() con CASE para contar solo roles 1 y 2
+   - Agregado contador clientes_actuales
+
+✅ backend/middlewares/tenant.js
+   - Validación solo para roles 1 y 2 (admin/empleado)
+   - Mensaje mejorado: "Límite de administradores/empleados alcanzado"
+
+✅ backend/routes/usuarios.routes.js
+   - Importado checkTenantLimit
+   - Agregado middleware a POST /usuarios
+
+✅ frontend/src/pages/admin/Settings.jsx
+   - Límites corregidos: básico 5, profesional 20
+   - UI: "Usuarios" → "Staff" con tooltip
+   - Subtexto "Admin/Empleados"
+
+✅ frontend/src/pages/admin/Usuarios.jsx
+   - getPlanLimits() corregido
+   - canAddMoreUsers() cuenta solo staff
+   - UI muestra contadores separados: Staff y Clientes
+
+✅ backend/analizar-usuarios.js (CREADO)
+   - Script para verificar conteo de usuarios por rol
+
+════════════════════════════════════════════════════════════════════════════════
+💡 CONSIDERACIONES IMPORTANTES
+════════════════════════════════════════════════════════════════════════════════
+
+1. ROLES:
+   - Rol 1 (Admin): Cuenta para límite ✅
+   - Rol 2 (Empleado): Cuenta para límite ✅
+   - Rol 3 (Cliente): NO cuenta para límite ✅
+
+2. CLIENTES:
+   - Son ILIMITADOS en todos los planes
+   - No afectan el límite de usuarios del plan
+   - Se registran desde la tienda pública
+
+3. STAFF:
+   - Admin y empleados SÍ cuentan para el límite
+   - Se crean desde panel administrativo
+   - Plan básico: máximo 5 staff
+
+4. VALIDACIÓN:
+   - Backend valida al crear usuario
+   - Frontend previene botón "Nuevo Usuario" cuando límite alcanzado
+   - Middleware checkTenantLimit solo para roles 1 y 2
+
+════════════════════════════════════════════════════════════════════════════════
+✅ SISTEMA CORREGIDO Y FUNCIONANDO
+════════════════════════════════════════════════════════════════════════════════
+
+Ahora el sistema diferencia correctamente entre:
+  👥 Staff (admin/empleados) → Limitado según plan
+  👤 Clientes → Ilimitados siempre
+
+El panel administrativo muestra claramente:
+  "👥 Staff: 2 / 5"
+  "👤 Clientes: 2 (ilimitados)"

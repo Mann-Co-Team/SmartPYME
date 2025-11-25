@@ -7,7 +7,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 const CartSidebar = () => {
   const navigate = useNavigate();
-  const { items, isOpen, setIsOpen, updateQuantity, removeItem, getTotal } = useCart();
+  const { items, isOpen, setIsOpen, updateQuantity, removeItem, getTotal, currentTenant } = useCart();
   const { settings } = useTheme();
 
   const formatPrice = (price) => {
@@ -29,7 +29,7 @@ const CartSidebar = () => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm transition-all" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -45,17 +45,17 @@ const CartSidebar = () => {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col bg-white shadow-xl">
+                  <div className="flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl">
                     {/* Header */}
                     <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <Dialog.Title className="text-lg font-medium text-gray-900">
-                          Carrito de compras
+                      <div className="flex items-start justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
+                        <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+                          🛒 Carrito de compras
                         </Dialog.Title>
                         <div className="ml-3 flex h-7 items-center">
                           <button
                             type="button"
-                            className="relative -m-2 p-2 text-gray-400 hover:text-gray-500"
+                            className="relative -m-2 p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             onClick={() => setIsOpen(false)}
                           >
                             <XMarkIcon className="h-6 w-6" />
@@ -64,58 +64,71 @@ const CartSidebar = () => {
                       </div>
 
                       {/* Items del carrito */}
-                      <div className="mt-8">
+                      <div className="mt-6">
                         {items.length === 0 ? (
-                          <div className="text-center py-8">
-                            <p className="text-gray-500">Tu carrito está vacío</p>
+                          <div className="text-center py-12">
+                            <div className="text-6xl mb-4">🛒</div>
+                            <p className="text-gray-500 dark:text-gray-400 text-lg">Tu carrito está vacío</p>
+                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">¡Agrega productos para empezar!</p>
                           </div>
                         ) : (
                           <div className="flow-root">
-                            <ul className="-my-6 divide-y divide-gray-200">
+                            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                               {items.map((item) => (
-                                <li key={item.id_producto} className="flex py-6">
-                                  <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                                <li key={item.id_producto} className="flex gap-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 px-2 rounded-lg transition-colors">
+                                  <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700">
                                     <img
                                       src={item.imagen ? `http://localhost:3000${item.imagen}` : '/placeholder-product.jpg'}
                                       alt={item.nombre}
                                       className="h-full w-full object-cover object-center"
+                                      onError={(e) => {
+                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo img%3C/text%3E%3C/svg%3E';
+                                      }}
                                     />
                                   </div>
 
-                                  <div className="ml-4 flex flex-1 flex-col">
+                                  <div className="flex flex-1 flex-col justify-between">
                                     <div>
-                                      <div className="flex justify-between text-base font-medium text-gray-900">
-                                        <h3>{item.nombre}</h3>
-                                        <p className="ml-4">{formatPrice(item.precio * item.quantity)}</p>
+                                      <div className="flex justify-between">
+                                        <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                                          {item.nombre}
+                                        </h3>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeItem(item.id_producto)}
+                                          className="ml-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                                          title="Eliminar producto"
+                                        >
+                                          <TrashIcon className="h-4 w-4" />
+                                        </button>
                                       </div>
-                                      <p className="mt-1 text-sm text-gray-500">
+                                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         {formatPrice(item.precio)} c/u
                                       </p>
                                     </div>
-                                    <div className="flex flex-1 items-end justify-between text-sm">
-                                      <div className="flex items-center space-x-2">
+                                    
+                                    <div className="flex items-center justify-between mt-2">
+                                      <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                                         <button
                                           onClick={() => updateQuantity(item.id_producto, item.quantity - 1)}
-                                          className="p-1 rounded-md hover:bg-gray-100"
+                                          className="p-1 rounded hover:bg-white dark:hover:bg-gray-600 transition-colors"
+                                          disabled={item.quantity <= 1}
                                         >
-                                          <MinusIcon className="h-4 w-4" />
+                                          <MinusIcon className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                                         </button>
-                                        <span className="font-medium">{item.quantity}</span>
+                                        <span className="font-semibold text-sm min-w-[20px] text-center text-gray-900 dark:text-white">
+                                          {item.quantity}
+                                        </span>
                                         <button
                                           onClick={() => updateQuantity(item.id_producto, item.quantity + 1)}
-                                          className="p-1 rounded-md hover:bg-gray-100"
+                                          className="p-1 rounded hover:bg-white dark:hover:bg-gray-600 transition-colors"
                                         >
-                                          <PlusIcon className="h-4 w-4" />
+                                          <PlusIcon className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                                         </button>
                                       </div>
-
-                                      <button
-                                        type="button"
-                                        onClick={() => removeItem(item.id_producto)}
-                                        className="font-medium text-red-600 hover:text-red-500"
-                                      >
-                                        <TrashIcon className="h-4 w-4" />
-                                      </button>
+                                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                        {formatPrice(item.precio * item.quantity)}
+                                      </p>
                                     </div>
                                   </div>
                                 </li>
@@ -128,36 +141,47 @@ const CartSidebar = () => {
 
                     {/* Footer con total y botón de pago */}
                     {items.length > 0 && (
-                      <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
-                        <div className="flex justify-between text-base font-medium text-gray-900">
-                          <p>Total</p>
-                          <p>{formatPrice(getTotal())}</p>
+                      <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-4 py-6 sm:px-6">
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <span>Subtotal ({items.reduce((acc, item) => acc + item.quantity, 0)} {items.reduce((acc, item) => acc + item.quantity, 0) === 1 ? 'producto' : 'productos'})</span>
+                            <span>{formatPrice(getTotal())}</span>
+                          </div>
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <span>Envío</span>
+                            <span className="text-green-600 dark:text-green-400 font-medium">Calculado en checkout</span>
+                          </div>
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500">
-                          Envío calculado al finalizar compra
-                        </p>
+                        
+                        <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white border-t border-gray-300 dark:border-gray-600 pt-4">
+                          <span>Total</span>
+                          <span>{formatPrice(getTotal())}</span>
+                        </div>
+                        
                         <div className="mt-6">
                           <button 
-                            className="btn-primary w-full"
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2"
                             onClick={() => {
                               setIsOpen(false);
-                              navigate('/checkout');
+                              if (currentTenant) {
+                                navigate(`/tienda/${currentTenant}/checkout`);
+                              } else {
+                                navigate('/checkout');
+                              }
                             }}
                           >
-                            Proceder al pago
+                            <span>Proceder al pago</span>
+                            <span>→</span>
                           </button>
                         </div>
-                        <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
-                          <p>
-                            o{' '}
-                            <button
-                              type="button"
-                              className="font-medium text-primary-600 hover:text-primary-500"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              Continuar comprando
-                            </button>
-                          </p>
+                        <div className="mt-4 flex justify-center text-center text-sm">
+                          <button
+                            type="button"
+                            className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            ← Continuar comprando
+                          </button>
                         </div>
                       </div>
                     )}

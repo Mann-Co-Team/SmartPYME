@@ -4,7 +4,8 @@ class DashboardController {
     // RF-8: Obtener métricas del dashboard
     static async getMetricas(req, res) {
         try {
-            const metricas = await DashboardModel.getMetricas();
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const metricas = await DashboardModel.getMetricas(tenantId);
             
             // Verificar si hay datos disponibles
             const sinDatos = 
@@ -39,7 +40,8 @@ class DashboardController {
     // RF-8: Obtener ventas por mes
     static async getVentasPorMes(req, res) {
         try {
-            const ventas = await DashboardModel.getVentasPorMes();
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const ventas = await DashboardModel.getVentasPorMes(tenantId);
             
             res.json({
                 success: true,

@@ -10,11 +10,21 @@ import AdminLayout from './components/Layout/AdminLayout.jsx';
 
 // Páginas
 import HomePage from './pages/public/HomePage';
+import TiendasList from './pages/public/TiendasList';
+import RegistroEmpresa from './pages/public/RegistroEmpresa';
 import Register from './pages/public/Register';
 import Login from './pages/public/Login';
 import Checkout from './pages/public/Checkout';
 import MisPedidos from './pages/public/MisPedidos';
 import DetallePedido from './pages/public/DetallePedido';
+import TiendaHome from './pages/public/TiendaHome';
+import TiendaLogin from './pages/public/TiendaLogin';
+import TiendaRegistro from './pages/public/TiendaRegistro';
+import TiendaCheckout from './pages/public/TiendaCheckout';
+import TiendaPedidos from './pages/public/TiendaPedidos';
+import TiendaDetallePedido from './pages/public/TiendaDetallePedido';
+import TiendaPerfil from './pages/public/TiendaPerfil';
+import AdminEmpresaSelector from './pages/public/AdminEmpresaSelector';
 import AdminLogin from './pages/admin/Login.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import AdminProductos from './pages/admin/Productos.jsx';
@@ -23,26 +33,60 @@ import AdminPedidos from './pages/admin/Pedidos.jsx';
 import AdminDetallePedido from './pages/admin/DetallePedido.jsx';
 import AdminUsuarios from './pages/admin/Usuarios.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
+import AdminReportes from './pages/admin/Reportes.jsx';
+import CambiarPassword from './pages/CambiarPassword.jsx';
+import Perfil from './pages/public/Perfil.jsx';
+import OlvidePassword from './pages/OlvidePassword.jsx';
+import RecuperarPassword from './pages/RecuperarPassword.jsx';
 import PrivateRoute from './components/PrivateRoute';
+import TestCarrito from './pages/TestCarrito';
 
 function App() {
   return (
     <ThemeProvider>
-      <CartProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <CartProvider>
           <Routes>
-            {/* Ruta pública */}
-            <Route path="/" element={
-              <PublicLayout>
-                <HomePage />
-              </PublicLayout>
-            } />
+            {/* Página principal */}
+            <Route path="/" element={<HomePage />} />
+
+            {/* Página de prueba del carrito */}
+            <Route path="/test-carrito" element={<TestCarrito />} />
+
+            {/* Lista de tiendas */}
+            <Route path="/tiendas" element={<TiendasList />} />
+
+            {/* Registro de empresa */}
+            <Route path="/registro-empresa" element={<RegistroEmpresa />} />
 
             {/* Registro público */}
             <Route path="/registro" element={<Register />} />
 
             {/* Login público */}
             <Route path="/login" element={<Login />} />
+
+            {/* Rutas de tiendas por tenant */}
+            <Route path="/tienda/:tenant_slug" element={<TiendaHome />} />
+            <Route path="/tienda/:tenant_slug/login" element={<TiendaLogin />} />
+            <Route path="/tienda/:tenant_slug/registro" element={<TiendaRegistro />} />
+            <Route path="/tienda/:tenant_slug/checkout" element={<TiendaCheckout />} />
+            <Route path="/tienda/:tenant_slug/pedidos" element={<TiendaPedidos />} />
+            <Route path="/tienda/:tenant_slug/pedidos/:id" element={<TiendaDetallePedido />} />
+            <Route path="/tienda/:tenant_slug/perfil" element={<TiendaPerfil />} />
+
+            {/* Recuperación de contraseña - Rutas públicas */}
+            <Route path="/olvide-password" element={<OlvidePassword />} />
+            <Route path="/recuperar-password/:token" element={<RecuperarPassword />} />
+
+            {/* Selector de empresa para admin */}
+            <Route path="/admin/seleccionar-empresa" element={<AdminEmpresaSelector />} />
+
+            {/* Perfil del usuario */}
+            <Route path="/perfil" element={
+              <PublicLayout>
+                <Perfil />
+              </PublicLayout>
+            } />
 
             {/* Checkout - Ruta protegida para clientes */}
             <Route path="/checkout" element={
@@ -65,27 +109,40 @@ function App() {
               </PublicLayout>
             } />
 
-            {/* Login admin */}
-            <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Cambiar contraseña - Ruta protegida para usuarios autenticados */}
+            <Route path="/cambiar-password" element={
+              <PublicLayout>
+                <CambiarPassword />
+              </PublicLayout>
+            } />
 
-            {/* Rutas admin protegidas */}
-            <Route path="/admin" element={<PrivateRoute />}>
+            {/* Login admin con tenant en URL */}
+            <Route path="/:tenant_slug/admin/login" element={<AdminLogin />} />
+
+            {/* Rutas admin protegidas con tenant en URL */}
+            <Route path="/:tenant_slug/admin" element={<PrivateRoute />}>
               <Route element={<AdminLayout />}>
-                <Route index element={<Navigate to="/admin/dashboard" />} />
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="productos" element={<AdminProductos />} />
                 <Route path="categorias" element={<AdminCategorias />} />
                 <Route path="pedidos" element={<AdminPedidos />} />
                 <Route path="pedidos/:id" element={<AdminDetallePedido />} />
                 <Route path="usuarios" element={<AdminUsuarios />} />
+                <Route path="reportes" element={<AdminReportes />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="cambiar-password" element={<CambiarPassword />} />
               </Route>
             </Route>
+
+            {/* Redirect legacy admin routes */}
+            <Route path="/admin/login" element={<Navigate to="/" replace />} />
+            <Route path="/admin/*" element={<Navigate to="/" replace />} />
           </Routes>
           
           <Toaster position="top-right" />
-        </BrowserRouter>
-      </CartProvider>
+        </CartProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
