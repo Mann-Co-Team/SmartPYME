@@ -1,0 +1,1521 @@
+﻿
+> smartpyme-backend@1.0.0 test
+> cross-env NODE_ENV=test jest --detectOpenHandles --forceExit
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'Client',
+      email: 'client_usuarios_1764137187940@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:244:17)
+
+  console.log
+    ­ƒöì Verificando email: client_usuarios_1764137187940@example.com
+
+      at log (controllers/auth.controller.js:267:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:278:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 18
+
+      at log (controllers/auth.controller.js:289:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 139
+
+      at log (controllers/auth.controller.js:293:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'client_usuarios_1764137187940@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    LOGIN ADMIN - BODY RECIBIDO: {
+      email: 'admin@pasteleria-dulce-sabor.com',
+      password: 'Admin123!',
+      tenant_slug: 'pasteleria-dulce-sabor'
+    }
+
+      at log (controllers/auth.controller.js:116:17)
+
+  console.log
+    ­ƒöì DEBUG - Tenant obtenido de BD: {
+      id: 18,
+      nombre: 'Pasteler├¡a Dulce Sabor',
+      slug: 'pasteleria-dulce-sabor',
+      plan: 'basico',
+      completo: {
+        id_tenant: 18,
+        nombre_empresa: 'Pasteler├¡a Dulce Sabor',
+        slug: 'pasteleria-dulce-sabor',
+        email_empresa: 'contacto@dulcesabor.com',
+        telefono_empresa: null,
+        direccion_empresa: null,
+        descripcion: null,
+        whatsapp: null,
+        instagram: null,
+        facebook: null,
+        logo: null,
+        plan: 'basico',
+        activo: 1,
+        fecha_inicio: 2025-11-24T03:00:00.000Z,
+        fecha_fin: null,
+        max_usuarios: 5,
+        max_productos: 100,
+        configuracion: null,
+        created_at: 2025-11-24T15:48:01.000Z,
+        updated_at: 2025-11-25T18:16:51.000Z
+      }
+    }
+
+      at log (controllers/auth.controller.js:149:21)
+
+node.exe : FAIL 
+tests/usuarios.test.js
+En C:\Program 
+Files\nodejs\npm.ps1: 29 
+Carácter: 3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+NotSp    ecified: (FAIL 
+tests/usuarios.t    
+est.js:String) [], 
+RemoteExcept    ion
+    + FullyQualifiedErrorId : 
+Nativ    eCommandError
+ 
+  Usuario Endpoints
+    ├ù should create a user as 
+admin (37 ms)
+    ÔêÜ should fail to create 
+user as client (17 ms)
+    ÔêÜ should list users as 
+admin (20 ms)
+    ÔêÜ should fail to list 
+users as client (15 ms)
+    ├ù should update user as 
+admin (15 ms)
+    ÔêÜ should fail to update 
+user as client (17 ms)
+    ├ù should get user 
+statistics as admin (14 ms)
+    ├ù should delete user as 
+admin (14 ms)
+    ├ù should fail to delete 
+user as client (18 ms)
+    ÔêÜ should validate 
+required fields when creating 
+user (17 ms)
+    ÔêÜ should prevent 
+duplicate email (17 ms)
+
+  ÔùÅ Usuario Endpoints ÔÇ║ 
+should create a user as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 201
+    Received: 400
+
+    [0m [90m 76 |[39m       
+      [33m.[39msend(testUser)
+[33m;[39m
+     [90m 77 |[39m
+    [31m[1m>[22m[39m[90m 
+78 |[39m         expect(res[3
+3m.[39mstatusCode)[33m.[39mt
+oEqual([35m201[39m)[33m;[39
+m
+     [90m    |[39m           
+                     
+[31m[1m^[22m[39m
+     [90m 79 |[39m         ex
+pect(res[33m.[39mbody[33m.[
+39msuccess)[33m.[39mtoBe([36
+mtrue[39m)[33m;[39m
+     [90m 80 |[39m         ex
+pect(res[33m.[39mbody[33m.[
+39mdata)[33m.[39mtoHaveProper
+ty([32m'id_usuario'[39m)[33m
+;[39m
+     [90m 81 |[39m         
+testUserId [33m=[39m res[33m
+.[39mbody[33m.[39mdata[33m.
+[39mid_usuario[33m;[39m[0m
+
+      at Object.toEqual 
+(tests/usuarios.test.js:78:32)
+
+  ÔùÅ Usuario Endpoints ÔÇ║ 
+should update user as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 120 |[39m      
+       [33m.[39msend(updatedD
+ata)[33m;[39m
+     [90m 121 |[39m
+    [31m[1m>[22m[39m[90m 
+122 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 123 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 124 |[39m     
+})[33m;[39m
+     [90m 125 |[39m[0m
+
+      at Object.toEqual 
+(tests/usuarios.test.js:122:32)
+
+  ÔùÅ Usuario Endpoints ÔÇ║ 
+should get user statistics as 
+admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 138 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer 
+${adminToken}`[39m)[33m;[39m
+     [90m 139 |[39m
+    [31m[1m>[22m[39m[90m 
+140 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 141 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39mdata)[33m.[39mtoHavePrope
+rty([32m'total'[39m)[33m;[3
+9m
+     [90m 142 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39mdata)[33m.[39mtoHavePrope
+rty([32m'porRol'[39m)[33m;[
+39m
+     [90m 143 |[39m     
+})[33m;[39m[0m
+
+      at Object.toEqual 
+(tests/usuarios.test.js:140:32)
+
+  ÔùÅ Usuario Endpoints ÔÇ║ 
+should delete user as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 148 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer 
+${adminToken}`[39m)[33m;[39m
+     [90m 149 |[39m
+    [31m[1m>[22m[39m[90m 
+150 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 151 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 152 |[39m
+     [90m 153 |[39m         
+[90m// Mark as deleted so 
+cleanup doesn't try to delete 
+again[39m[0m
+
+      at Object.toEqual 
+(tests/usuarios.test.js:150:32)
+
+  ÔùÅ Usuario Endpoints ÔÇ║ 
+should fail to delete user as 
+client
+
+    TypeError: Cannot read 
+properties of undefined 
+(reading 'id_usuario')
+
+    [0m [90m 168 |[39m      
+       })[33m;[39m
+     [90m 169 |[39m
+    [31m[1m>[22m[39m[90m 
+170 |[39m         
+[36mconst[39m userId 
+[33m=[39m createRes[33m.[39
+mbody[33m.[39mdata[33m.[39m
+id_usuario[33m;[39m
+     [90m     |[39m          
+                               
+   [31m[1m^[22m[39m
+     [90m 171 |[39m
+     [90m 172 |[39m         
+[36mconst[39m res 
+[33m=[39m [36mawait[39m 
+request(app)
+     [90m 173 |[39m          
+   [33m.[39m[36mdelete[39m(
+[32m`/api/usuarios/${userId}`
+[39m)[0m
+
+      at Object.id_usuario 
+(tests/usuarios.test.js:170:44)
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'Client',
+      email: 'client_productos_1764137189198@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:244:17)
+
+  console.log
+    ­ƒöì Verificando email: client_productos_1764137189198@example.com
+
+      at log (controllers/auth.controller.js:267:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:278:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 18
+
+      at log (controllers/auth.controller.js:289:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 140
+
+      at log (controllers/auth.controller.js:293:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'client_productos_1764137189198@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    LOGIN ADMIN - BODY RECIBIDO: {
+      email: 'admin@pasteleria-dulce-sabor.com',
+      password: 'Admin123!',
+      tenant_slug: 'pasteleria-dulce-sabor'
+    }
+
+      at log (controllers/auth.controller.js:116:17)
+
+  console.log
+    ­ƒöì DEBUG - Tenant obtenido de BD: {
+      id: 18,
+      nombre: 'Pasteler├¡a Dulce Sabor',
+      slug: 'pasteleria-dulce-sabor',
+      plan: 'basico',
+      completo: {
+        id_tenant: 18,
+        nombre_empresa: 'Pasteler├¡a Dulce Sabor',
+        slug: 'pasteleria-dulce-sabor',
+        email_empresa: 'contacto@dulcesabor.com',
+        telefono_empresa: null,
+        direccion_empresa: null,
+        descripcion: null,
+        whatsapp: null,
+        instagram: null,
+        facebook: null,
+        logo: null,
+        plan: 'basico',
+        activo: 1,
+        fecha_inicio: 2025-11-24T03:00:00.000Z,
+        fecha_fin: null,
+        max_usuarios: 5,
+        max_productos: 100,
+        configuracion: null,
+        created_at: 2025-11-24T15:48:01.000Z,
+        updated_at: 2025-11-25T18:16:51.000Z
+      }
+    }
+
+      at log (controllers/auth.controller.js:149:21)
+
+FAIL tests/productos.test.js
+  Producto Endpoints
+    ├ù should create a product 
+as admin (31 ms)
+    ÔêÜ should fail to create 
+product as client (19 ms)
+    ÔêÜ should list products 
+for client (16 ms)
+    ├ù should get a specific 
+product (16 ms)
+    ├ù should update product 
+as admin (12 ms)
+    ÔêÜ should fail to update 
+product as client (12 ms)
+    ├ù should delete product 
+as admin (15 ms)
+    ├ù should fail to delete 
+product as client (14 ms)
+
+  ÔùÅ Producto Endpoints ÔÇ║ 
+should create a product as 
+admin
+
+    expect(received).toHaveProp
+erty(path)
+
+    Expected path: 
+"id_producto"
+    Received path: []
+
+    Received value: {"id": 160}
+
+    [0m [90m 92 |[39m       
+  expect(res[33m.[39mstatusCo
+de)[33m.[39mtoEqual([35m201
+[39m)[33m;[39m
+     [90m 93 |[39m         ex
+pect(res[33m.[39mbody[33m.[
+39msuccess)[33m.[39mtoBe([36
+mtrue[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 
+94 |[39m         expect(res[3
+3m.[39mbody[33m.[39mdata)[3
+3m.[39mtoHaveProperty([32m'id
+_producto'[39m)[33m;[39m
+     [90m    |[39m           
+                    
+[31m[1m^[22m[39m
+     [90m 95 |[39m         
+testProductId [33m=[39m res[
+33m.[39mbody[33m.[39mdata[3
+3m.[39mid_producto[33m;[39m
+     [90m 96 |[39m     
+})[33m;[39m
+     [90m 97 |[39m[0m
+
+      at Object.toHaveProperty 
+(tests/productos.test.js:94:31)
+
+  ÔùÅ Producto Endpoints ÔÇ║ 
+should get a specific product
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 404
+
+    [0m [90m 119 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer ${clientTok
+en}`[39m)[33m;[39m
+     [90m 120 |[39m
+    [31m[1m>[22m[39m[90m 
+121 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 122 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39mdata)[33m.[39mtoHavePrope
+rty([32m'nombre'[39m[33m,[3
+9m testProduct[33m.[39mnombre
+)[33m;[39m
+     [90m 123 |[39m     
+})[33m;[39m
+     [90m 124 |[39m[0m
+
+      at Object.toEqual (tests/
+productos.test.js:121:32)
+
+  ÔùÅ Producto Endpoints ÔÇ║ 
+should update product as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 134 |[39m      
+       [33m.[39msend(updatedD
+ata)[33m;[39m
+     [90m 135 |[39m
+    [31m[1m>[22m[39m[90m 
+136 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 137 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 138 |[39m     
+})[33m;[39m
+     [90m 139 |[39m[0m
+
+      at Object.toEqual (tests/
+productos.test.js:136:32)
+
+  ÔùÅ Producto Endpoints ÔÇ║ 
+should delete product as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 404
+
+    [0m [90m 152 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer 
+${adminToken}`[39m)[33m;[39m
+     [90m 153 |[39m
+    [31m[1m>[22m[39m[90m 
+154 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 155 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 156 |[39m
+     [90m 157 |[39m         
+[90m// Mark as deleted so 
+cleanup doesn't try to delete 
+again[39m[0m
+
+      at Object.toEqual (tests/
+productos.test.js:154:32)
+
+  ÔùÅ Producto Endpoints ÔÇ║ 
+should fail to delete product 
+as client
+
+    TypeError: Cannot read 
+properties of undefined 
+(reading 'id_producto')
+
+    [0m [90m 166 |[39m      
+       [33m.[39msend(testProd
+uct)[33m;[39m
+     [90m 167 |[39m
+    [31m[1m>[22m[39m[90m 
+168 |[39m         
+[36mconst[39m productId 
+[33m=[39m createRes[33m.[39
+mbody[33m.[39mdata[33m.[39m
+id_producto[33m;[39m
+     [90m     |[39m          
+                               
+      [31m[1m^[22m[39m
+     [90m 169 |[39m
+     [90m 170 |[39m         
+[36mconst[39m res 
+[33m=[39m [36mawait[39m 
+request(app)
+     [90m 171 |[39m          
+   [33m.[39m[36mdelete[39m(
+[32m`/api/productos/${productI
+d}`[39m)[0m
+
+      at Object.id_producto (te
+sts/productos.test.js:168:47)
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'Client',
+      email: 'client_categorias_1764137190250@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:244:17)
+
+  console.log
+    ­ƒöì Verificando email: client_categorias_1764137190250@example.com
+
+      at log (controllers/auth.controller.js:267:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:278:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 18
+
+      at log (controllers/auth.controller.js:289:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 141
+
+      at log (controllers/auth.controller.js:293:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'client_categorias_1764137190250@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    LOGIN ADMIN - BODY RECIBIDO: {
+      email: 'admin@pasteleria-dulce-sabor.com',
+      password: 'Admin123!',
+      tenant_slug: 'pasteleria-dulce-sabor'
+    }
+
+      at log (controllers/auth.controller.js:116:17)
+
+  console.log
+    ­ƒöì DEBUG - Tenant obtenido de BD: {
+      id: 18,
+      nombre: 'Pasteler├¡a Dulce Sabor',
+      slug: 'pasteleria-dulce-sabor',
+      plan: 'basico',
+      completo: {
+        id_tenant: 18,
+        nombre_empresa: 'Pasteler├¡a Dulce Sabor',
+        slug: 'pasteleria-dulce-sabor',
+        email_empresa: 'contacto@dulcesabor.com',
+        telefono_empresa: null,
+        direccion_empresa: null,
+        descripcion: null,
+        whatsapp: null,
+        instagram: null,
+        facebook: null,
+        logo: null,
+        plan: 'basico',
+        activo: 1,
+        fecha_inicio: 2025-11-24T03:00:00.000Z,
+        fecha_fin: null,
+        max_usuarios: 5,
+        max_productos: 100,
+        configuracion: null,
+        created_at: 2025-11-24T15:48:01.000Z,
+        updated_at: 2025-11-25T18:16:51.000Z
+      }
+    }
+
+      at log (controllers/auth.controller.js:149:21)
+
+  console.error
+    Error creando categor├¡a: Error: Duplicate entry '18-Category to Delete' for key 'categorias.unique_categoria_tenant'
+        at PromisePool.execute (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\node_modules\mysql2\lib\promise\pool.js:54:22)
+        at Function.execute [as create] (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\models\categoria.model.js:51:39)
+        at create (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\controllers\categoria.controller.js:59:54)
+        at Layer.handle [as handle_request] (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\node_modules\express\lib\router\layer.js:95:5)
+        at next (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\node_modules\express\lib\router\route.js:149:13)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5) {
+      code: 'ER_DUP_ENTRY',
+      errno: 1062,
+      sql: '\n' +
+        '                INSERT INTO categorias (id_tenant, nombre, descripcion, activo)\n' +
+        '                VALUES (?, ?, ?, ?)\n' +
+        '            ',
+      sqlState: '23000',
+      sqlMessage: "Duplicate entry '18-Category to Delete' for key 'categorias.unique_categoria_tenant'"
+    }
+
+    [0m [90m 73 |[39m             }
+     [90m 74 |[39m
+    [31m[1m>[22m[39m[90m 75 |[39m             console[33m.[39merror([32m'Error creando categor├¡a:'[39m[33m,[39m error)[33m;[39m
+     [90m    |[39m                     [31m[1m^[22m[39m
+     [90m 76 |[39m             res[33m.[39mstatus([35m500[39m)[33m.[39mjson({
+     [90m 77 |[39m                 success[33m:[39m [36mfalse[39m[33m,[39m
+     [90m 78 |[39m                 message[33m:[39m [32m'Error interno del servidor'[39m[0m
+
+      at error (controllers/categoria.controller.js:75:21)
+
+FAIL tests/categorias.test.js
+  Categoria Endpoints
+    ├ù should create a 
+category as admin (22 ms)
+    ÔêÜ should fail to create 
+category as client (12 ms)
+    ÔêÜ should list categories 
+for client (15 ms)
+    ├ù should update category 
+as admin (13 ms)
+    ÔêÜ should fail to update 
+category as client (28 ms)
+    ├ù should toggle category 
+active status as admin (17 ms)
+    ├ù should delete category 
+as admin (19 ms)
+    ├ù should fail to delete 
+category as client (34 ms)
+
+  ÔùÅ Categoria Endpoints ÔÇ║ 
+should create a category as 
+admin
+
+    expect(received).toHaveProp
+erty(path)
+
+    Expected path: 
+"id_categoria"
+    Received path: []
+
+    Received value: {"id": 157}
+
+    [0m [90m 77 |[39m       
+  expect(res[33m.[39mstatusCo
+de)[33m.[39mtoEqual([35m201
+[39m)[33m;[39m
+     [90m 78 |[39m         ex
+pect(res[33m.[39mbody[33m.[
+39msuccess)[33m.[39mtoBe([36
+mtrue[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 
+79 |[39m         expect(res[3
+3m.[39mbody[33m.[39mdata)[3
+3m.[39mtoHaveProperty([32m'id
+_categoria'[39m)[33m;[39m
+     [90m    |[39m           
+                    
+[31m[1m^[22m[39m
+     [90m 80 |[39m         
+testCategoryId [33m=[39m res
+[33m.[39mbody[33m.[39mdata[
+33m.[39mid_categoria[33m;[39
+m
+     [90m 81 |[39m     
+})[33m;[39m
+     [90m 82 |[39m[0m
+
+      at Object.toHaveProperty 
+(tests/categorias.test.js:79:31
+)
+
+  ÔùÅ Categoria Endpoints ÔÇ║ 
+should update category as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 111 |[39m      
+       [33m.[39msend(updatedD
+ata)[33m;[39m
+     [90m 112 |[39m
+    [31m[1m>[22m[39m[90m 
+113 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 114 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 115 |[39m     
+})[33m;[39m
+     [90m 116 |[39m[0m
+
+      at Object.toEqual (tests/
+categorias.test.js:113:32)
+
+  ÔùÅ Categoria Endpoints ÔÇ║ 
+should toggle category active 
+status as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 404
+
+    [0m [90m 129 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer 
+${adminToken}`[39m)[33m;[39m
+     [90m 130 |[39m
+    [31m[1m>[22m[39m[90m 
+131 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 132 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 133 |[39m     
+})[33m;[39m
+     [90m 134 |[39m[0m
+
+      at Object.toEqual (tests/
+categorias.test.js:131:32)
+
+  ÔùÅ Categoria Endpoints ÔÇ║ 
+should delete category as admin
+
+    expect(received).toEqual(ex
+pected) // deep equality
+
+    Expected: 200
+    Received: 404
+
+    [0m [90m 138 |[39m      
+       [33m.[39m[36mset[39m
+([32m'Authorization'[39m[33m
+,[39m [32m`Bearer 
+${adminToken}`[39m)[33m;[39m
+     [90m 139 |[39m
+    [31m[1m>[22m[39m[90m 
+140 |[39m         expect(res[
+33m.[39mstatusCode)[33m.[39m
+toEqual([35m200[39m)[33m;[3
+9m
+     [90m     |[39m          
+                      
+[31m[1m^[22m[39m
+     [90m 141 |[39m         e
+xpect(res[33m.[39mbody[33m.
+[39msuccess)[33m.[39mtoBe([3
+6mtrue[39m)[33m;[39m
+     [90m 142 |[39m
+     [90m 143 |[39m         
+[90m// Mark as deleted so 
+cleanup doesn't try to delete 
+again[39m[0m
+
+      at Object.toEqual (tests/
+categorias.test.js:140:32)
+
+  ÔùÅ Categoria Endpoints ÔÇ║ 
+should fail to delete category 
+as client
+
+    TypeError: Cannot read 
+properties of undefined 
+(reading 'id_categoria')
+
+    [0m [90m 152 |[39m      
+       [33m.[39msend({ 
+nombre[33m:[39m 
+[32m'Category to 
+Delete'[39m[33m,[39m 
+descripcion[33m:[39m 
+[32m'Test'[39m })[33m;[39m
+     [90m 153 |[39m
+    [31m[1m>[22m[39m[90m 
+154 |[39m         
+[36mconst[39m categoryId 
+[33m=[39m createRes[33m.[39
+mbody[33m.[39mdata[33m.[39m
+id_categoria[33m;[39m
+     [90m     |[39m          
+                               
+       [31m[1m^[22m[39m
+     [90m 155 |[39m
+     [90m 156 |[39m         
+[36mconst[39m res 
+[33m=[39m [36mawait[39m 
+request(app)
+     [90m 157 |[39m          
+   [33m.[39m[36mdelete[39m(
+[32m`/api/categorias/${categor
+yId}`[39m)[0m
+
+      at Object.id_categoria (t
+ests/categorias.test.js:154:48)
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'Client',
+      email: 'client_1764137191270@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:244:17)
+
+  console.log
+    ­ƒöì Verificando email: client_1764137191270@example.com
+
+      at log (controllers/auth.controller.js:267:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:278:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 18
+
+      at log (controllers/auth.controller.js:289:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 142
+
+      at log (controllers/auth.controller.js:293:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'client_1764137191270@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    LOGIN ADMIN - BODY RECIBIDO: {
+      email: 'admin@pasteleria-dulce-sabor.com',
+      password: 'Admin123!',
+      tenant_slug: 'pasteleria-dulce-sabor'
+    }
+
+      at log (controllers/auth.controller.js:116:17)
+
+  console.log
+    ­ƒöì DEBUG - Tenant obtenido de BD: {
+      id: 18,
+      nombre: 'Pasteler├¡a Dulce Sabor',
+      slug: 'pasteleria-dulce-sabor',
+      plan: 'basico',
+      completo: {
+        id_tenant: 18,
+        nombre_empresa: 'Pasteler├¡a Dulce Sabor',
+        slug: 'pasteleria-dulce-sabor',
+        email_empresa: 'contacto@dulcesabor.com',
+        telefono_empresa: null,
+        direccion_empresa: null,
+        descripcion: null,
+        whatsapp: null,
+        instagram: null,
+        facebook: null,
+        logo: null,
+        plan: 'basico',
+        activo: 1,
+        fecha_inicio: 2025-11-24T03:00:00.000Z,
+        fecha_fin: null,
+        max_usuarios: 5,
+        max_productos: 100,
+        configuracion: null,
+        created_at: 2025-11-24T15:48:01.000Z,
+        updated_at: 2025-11-25T18:16:51.000Z
+      }
+    }
+
+      at log (controllers/auth.controller.js:149:21)
+
+  console.log
+    ­ƒôª Creando pedido con datos: {
+      "items": [
+        {
+          "id_producto": 137,
+          "cantidad": 1,
+          "precio_unitario": 1000,
+          "subtotal": 1000
+        }
+      ],
+      "total": 1000,
+      "metodo_entrega": "pickup",
+      "metodo_pago": "efectivo",
+      "notas": "Test order from Jest"
+    }
+
+      at log (controllers/pedido.controller.js:41:21)
+
+  console.warn
+    ÔÜá´©Å Email no enviado: SMTP no configurado
+
+    [0m [90m 46 |[39m       [36mconst[39m transport [33m=[39m getTransporter()[33m;[39m
+     [90m 47 |[39m       [36mif[39m ([33m![39mtransport) {
+    [31m[1m>[22m[39m[90m 48 |[39m         console[33m.[39mwarn([32m'ÔÜá´©Å Email no enviado: SMTP no configurado'[39m)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 49 |[39m         [36mreturn[39m { success[33m:[39m [36mfalse[39m[33m,[39m message[33m:[39m [32m'SMTP no configurado'[39m }[33m;[39m
+     [90m 50 |[39m       }
+     [90m 51 |[39m[0m
+
+      at Object.warn [as sendEmail] (services/email.service.js:48:17)
+      at Object.sendEmail [as sendNewOrderEmail] (services/email.service.js:161:25)
+      at sendNewOrderEmail (controllers/pedido.controller.js:75:36)
+
+  console.log
+    Ô£à Notificaciones enviadas para pedido #PED-20251126-3823
+
+      at log (controllers/pedido.controller.js:98:25)
+
+PASS tests/pedidos.test.js
+  Pedido Endpoints
+    ÔêÜ should create a new 
+order as client (136 ms)
+    ÔêÜ should list orders for 
+the client (32 ms)
+    ÔêÜ should allow admin to 
+view all orders (30 ms)
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'User',
+      email: 'test_1764137192443@example.com',
+      password: 'password123',
+      tenant_id: 1
+    }
+
+      at log (controllers/auth.controller.js:244:17)
+
+  console.log
+    ­ƒöì Verificando email: test_1764137192443@example.com
+
+      at log (controllers/auth.controller.js:267:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:278:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 1
+
+      at log (controllers/auth.controller.js:289:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 143
+
+      at log (controllers/auth.controller.js:293:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'test_1764137192443@example.com',
+      password: 'password123',
+      tenant_id: 1
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'test_1764137192443@example.com',
+      password: 'wrongpassword',
+      tenant_id: 1
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+PASS tests/auth.test.js
+  Auth Endpoints
+    ÔêÜ should register a new 
+public user (136 ms)
+    ÔêÜ should login with the 
+registered user (93 ms)
+    ÔêÜ should fail login with 
+wrong password (95 ms)
+
+---------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------
+File                             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                 
+---------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------
+All files                        |   29.53 |    14.76 |   22.38 |   29.62 |                                                                                                   
+ backend                         |   72.94 |       10 |      25 |   72.94 |                                                                                                   
+  app.js                         |   72.94 |       10 |      25 |   72.94 | 25,37,44,51,58,65,72,79,86,93,100,107,114,121,128,135,140,154-171                                 
+ backend/controllers             |   16.58 |    11.72 |   14.44 |   16.61 |                                                                                                   
+  auth.controller.js             |   48.62 |       50 |      50 |   48.62 | 13,21,30,38,46,54,106-107,122,130,139,158,165,173,181,190,234-235,250-251,259-260,270-271,301-424 
+  categoria.controller.js        |   29.87 |     12.5 |      50 |   29.87 | 15-42,56,69-71,84-129,150-200                                                                     
+  cliente.controller.js          |    4.76 |        0 |       0 |    4.76 | 7-217                                                                                             
+  dashboard.controller.js        |   10.52 |        0 |       0 |   10.52 | 6-52                                                                                              
+  notificaciones.controller.js   |    6.38 |        0 |       0 |    6.38 | 6-136                                                                                             
+  passwordRecovery.controller.js |    8.16 |        0 |       0 |    8.16 | 8-141                                                                                             
+  pedido.controller.js           |   17.76 |    17.94 |   18.18 |   17.76 | 19-35,48-49,102-116,122-140,150-468                                                               
+  producto.controller.js         |   31.25 |    13.15 |   66.66 |   31.25 | 15-16,36-42,59-61,73,85-176,198-256                                                               
+  reportes.controller.js         |    4.31 |        0 |       0 |    4.31 | 11-342                                                                                            
+  settings.controller.js         |    7.14 |        0 |       0 |    7.14 | 5-77                                                                                              
+  tenant.controller.js           |     5.1 |        0 |       0 |     5.1 | 11-557                                                                                            
+  usuario.controller.js          |    6.48 |     1.49 |      10 |     6.6 | 15-314                                                                                            
+ backend/middlewares             |   63.85 |    43.39 |   88.88 |   63.85 |                                                                                                   
+  auth.js                        |   78.26 |       60 |     100 |   78.26 | 9,25,38,45,49                                                                                     
+  permissions.js                 |    90.9 |    55.55 |     100 |    90.9 | 33                                                                                                
+  tenant.js                      |   51.02 |    35.29 |      75 |   51.02 | 20,29,37,45-48,69-70,82-100,112,121,133,145,158-159                                               
+ backend/models                  |   22.33 |    10.84 |   24.17 |   22.44 |                                                                                                   
+  categoria.model.js             |   32.55 |     12.5 |      50 |   32.55 | 16-23,38-45,67-127                                                                                
+  cliente.model.js               |    4.47 |        0 |       0 |    4.47 | 7-143                                                                                             
+  dashboard.model.js             |    7.69 |        0 |       0 |    7.69 | 6-150                                                                                             
+  notificaciones.model.js        |   26.08 |     8.33 |      30 |   26.08 | 35-111,136-185                                                                                    
+  passwordRecovery.model.js      |   27.27 |        0 |       0 |   27.27 | 7-41                                                                                              
+  pedido.model.js                |   35.91 |    20.48 |   31.25 |   36.17 | 39-57,119-167,181,187,219,230,270,278,303-305,312-609                                             
+  producto.model.js              |   45.45 |    19.56 |   57.14 |   45.45 | 16-22,36-42,62-120,132-133                                                                        
+  reportes.model.js              |    4.76 |        0 |       0 |    4.76 | 9-255                                                                                             
+  settings.model.js              |    8.69 |      100 |       0 |    8.69 | 5-67                                                                                              
+  tenant.model.js                |   15.06 |     2.77 |      25 |   15.27 | 8-19,33,47-64,94-314                                                                              
+  usuario.model.js               |   18.75 |     12.9 |   30.76 |   18.98 | 20-52,67,91-214,225-247                                                                           
+ backend/routes                  |   61.56 |        0 |       0 |   61.98 |                                                                                                   
+  auth.routes.js                 |     100 |      100 |     100 |     100 |                                                                                                   
+  catalogo.routes.js             |   17.02 |        0 |       0 |   17.77 | 8-30,39-70,79-108                                                                                 
+  categorias.routes.js           |     100 |      100 |     100 |     100 |                                                                                                   
+  clientes.routes.js             |     100 |      100 |     100 |     100 |                                                                                                   
+  dashboard.routes.js            |     100 |      100 |     100 |     100 |                                                                                                   
+  estados.routes.js              |   54.54 |      100 |       0 |   54.54 | 8-21                                                                                              
+  notificaciones.routes.js       |     100 |      100 |     100 |     100 |                                                                                                   
+  passwordRecovery.routes.js     |     100 |      100 |     100 |     100 |                                                                                                   
+  pedidos.routes.js              |     100 |      100 |     100 |     100 |                                                                                                   
+  perfil.routes.js               |   12.65 |        0 |       0 |   12.65 | 12-32,41-85,94-243                                                                                
+  productos.routes.js            |     100 |      100 |     100 |     100 |                                                                                                   
+  reportes.routes.js             |     100 |      100 |     100 |     100 |                                                                                                   
+  settings.routes.js             |     100 |      100 |     100 |     100 |                                                                                                   
+  tenants.routes.js              |     100 |      100 |     100 |     100 |                                                                                                   
+  usuarios.routes.js             |     100 |      100 |     100 |     100 |                                                                                                   
+ backend/services                |   35.84 |     62.5 |      50 |   35.84 |                                                                                                   
+  email.service.js               |   35.84 |     62.5 |      50 |   35.84 | 21,29-39,52-65,163-318                                                                            
+ backend/validators              |     100 |      100 |     100 |     100 |                                                                                                   
+  categoria.validator.js         |     100 |      100 |     100 |     100 |                                                                                                   
+  producto.validator.js          |     100 |      100 |     100 |     100 |                                                                                                   
+  usuario.validator.js           |     100 |      100 |     100 |     100 |                                                                                                   
+---------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------
+Test Suites: 3 failed, 2 
+passed, 5 total
+Tests:       15 failed, 18 
+passed, 33 total
+Snapshots:   0 total
+Time:        7.403 s
+Ran all test suites.

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import { login } from '../../services/auth';
+import { login, isAuthenticated } from '../../services/auth';
 import toast from 'react-hot-toast';
 import { LockClosedIcon, EnvelopeIcon, ArrowLeftIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import api from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function AdminLogin() {
   const { tenant_slug } = useParams(); // Obtener tenant_slug de la URL
+  const { darkMode } = useTheme(); // Obtener estado del modo oscuro
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,6 +19,13 @@ export default function AdminLogin() {
   const [validatingTenant, setValidatingTenant] = useState(true);
   const navigate = useNavigate();
 
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (tenant_slug && isAuthenticated(tenant_slug)) {
+      navigate(`/${tenant_slug}/admin/dashboard`);
+    }
+  }, [tenant_slug, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -24,18 +33,18 @@ export default function AdminLogin() {
     try {
       const response = await login(formData);
       const { token, user, tenant } = response.data.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('user_type', 'admin');
-      
+
       if (tenant) {
         localStorage.setItem('tenant', JSON.stringify(tenant));
         localStorage.setItem('current_tenant', tenant.slug);
       }
-      
+
       toast.success(`¡Bienvenido de nuevo${tenant ? ' a ' + tenant.nombre_empresa : ''}!`);
-      
+
       // Redirigir al dashboard del tenant correspondiente usando la URL con tenant_slug
       navigate(`/${tenant_slug}/admin/dashboard`);
     } catch (error) {
@@ -57,7 +66,7 @@ export default function AdminLogin() {
   useEffect(() => {
     const validateTenant = async () => {
       const slugToValidate = tenant_slug || formData.tenant_slug;
-      
+
       if (slugToValidate && slugToValidate.length >= 3) {
         setValidatingTenant(true);
         try {
@@ -96,7 +105,7 @@ export default function AdminLogin() {
   }, [formData.tenant_slug, tenant_slug, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'} flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8`}>
       {/* Decorative shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -105,38 +114,38 @@ export default function AdminLogin() {
       </div>
 
       <div className="max-w-md w-full space-y-8 relative">
-      {/* Logo/Icon */}
-      <div className="flex justify-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-          {tenantInfo ? (
-            <BuildingStorefrontIcon className="h-8 w-8 text-white" />
-          ) : (
-            <LockClosedIcon className="h-8 w-8 text-white" />
-          )}
+        {/* Logo/Icon */}
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+            {tenantInfo ? (
+              <BuildingStorefrontIcon className="h-8 w-8 text-white" />
+            ) : (
+              <LockClosedIcon className="h-8 w-8 text-white" />
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">
-          {tenantInfo ? tenantInfo.nombre_empresa : 'SmartPYME'}
-        </h2>
-        <p className="text-sm text-gray-600">
-          {tenantInfo ? (
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Panel de Administración • Plan {tenantInfo.plan}
-            </span>
-          ) : (
-            'Ingresa el identificador de tu empresa'
-          )}
-        </p>
-      </div>      {/* Form Card */}
-      <div className="bg-white rounded-xl shadow-xl p-6 space-y-4 backdrop-blur-sm bg-opacity-95">
+        {/* Header */}
+        <div className="text-center">
+          <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>
+            {tenantInfo ? tenantInfo.nombre_empresa : 'SmartPYME'}
+          </h2>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {tenantInfo ? (
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Panel de Administración • Plan {tenantInfo.plan}
+              </span>
+            ) : (
+              'Ingresa el identificador de tu empresa'
+            )}
+          </p>
+        </div>      {/* Form Card */}
+        <div className={`${darkMode ? 'bg-gray-800 bg-opacity-95' : 'bg-white bg-opacity-95'} rounded-xl shadow-xl p-6 space-y-4 backdrop-blur-sm`}>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Tenant Slug Input - Ahora primero */}
             <div>
-              <label htmlFor="tenant_slug" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="tenant_slug" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                 Identificador de Empresa
               </label>
               <div className="relative">
@@ -149,15 +158,13 @@ export default function AdminLogin() {
                   type="text"
                   required
                   disabled={!!tenant_slug}
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 ${
-                    tenant_slug ? 'bg-gray-100 cursor-not-allowed' : ''
-                  } ${
-                    tenantInfo 
-                      ? 'border-green-500 focus:ring-green-500' 
-                      : formData.tenant_slug.length >= 3 
-                      ? 'border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-indigo-600'
-                  }`}
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 ${darkMode ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-400'} ${tenant_slug ? (darkMode ? 'bg-gray-600 cursor-not-allowed' : 'bg-gray-100 cursor-not-allowed') : ''
+                    } ${tenantInfo
+                      ? 'border-green-500 focus:ring-green-500'
+                      : formData.tenant_slug.length >= 3
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-indigo-600'
+                    }`}
                   placeholder="pasteleria-dulce-sabor"
                   value={formData.tenant_slug}
                   onChange={handleChange}
@@ -208,7 +215,7 @@ export default function AdminLogin() {
 
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                 Correo Electrónico del Administrador
               </label>
               <div className="relative">
@@ -220,7 +227,7 @@ export default function AdminLogin() {
                   name="email"
                   type="email"
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                  className={`block w-full pl-10 pr-3 py-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all duration-200 placeholder-gray-400`}
                   placeholder={tenantInfo ? `admin@${formData.tenant_slug}.com` : 'admin@tu-empresa.com'}
                   value={formData.email}
                   onChange={handleChange}
@@ -230,7 +237,7 @@ export default function AdminLogin() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                 Contraseña
               </label>
               <div className="relative">
@@ -242,7 +249,7 @@ export default function AdminLogin() {
                   name="password"
                   type="password"
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                  className={`block w-full pl-10 pr-3 py-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all duration-200 placeholder-gray-400`}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -252,8 +259,8 @@ export default function AdminLogin() {
 
             {/* Link de recuperación de contraseña */}
             <div className="text-center">
-              <Link 
-                to="/olvide-password" 
+              <Link
+                to="/olvide-password"
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center gap-1 hover:underline transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -287,17 +294,17 @@ export default function AdminLogin() {
           </form>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-gray-200 space-y-3">
+          <div className={`pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} space-y-3`}>
             <div className="flex flex-col space-y-2 text-center text-sm">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 ¿Eres usuario? Inicia sesión aquí
               </Link>
-              <Link 
-                to="/" 
-                className="text-gray-600 hover:text-gray-700 font-medium transition-colors inline-flex items-center justify-center"
+              <Link
+                to={tenant_slug ? `/tienda/${tenant_slug}` : '/'}
+                className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'} font-medium transition-colors inline-flex items-center justify-center`}
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-1" />
                 Volver al inicio
@@ -307,7 +314,7 @@ export default function AdminLogin() {
         </div>
 
         {/* Help text */}
-        <p className="text-center text-sm text-gray-600">
+        <p className={`text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           ¿Necesitas ayuda? Contacta al administrador del sistema
         </p>
       </div>

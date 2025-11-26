@@ -55,7 +55,7 @@ const TiendaCheckout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validar que haya items en el carrito
     if (items.length === 0) {
       toast.error('No hay productos en el carrito');
@@ -73,9 +73,22 @@ const TiendaCheckout = () => {
     try {
       // Obtener datos del usuario desde localStorage
       const user = JSON.parse(localStorage.getItem('user'));
-      
+
       if (!user || !user.id) {
         toast.error('Debe iniciar sesión para realizar un pedido');
+        navigate(`/tienda/${tenant_slug}/login`);
+        return;
+      }
+
+      // VALIDACIÓN MULTI-TENANT: Verificar que el usuario pertenezca a esta tienda
+      if (tenant && user.id_tenant && user.id_tenant !== tenant.id_tenant) {
+        toast.error(
+          `Esta cuenta pertenece a otra tienda. Por favor, inicia sesión con una cuenta de ${tenant.nombre_empresa} o crea una nueva cuenta.`,
+          { duration: 6000 }
+        );
+        // Limpiar sesión actual y redirigir al login de esta tienda
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate(`/tienda/${tenant_slug}/login`);
         return;
       }
@@ -98,7 +111,7 @@ const TiendaCheckout = () => {
 
       // Crear pedido
       const response = await crearPedido(pedidoData);
-      
+
       // Mostrar mensaje de éxito con número de pedido
       toast.success(`¡Pedido creado exitosamente! Número: ${response.numero_pedido}`, {
         duration: 5000
@@ -107,10 +120,10 @@ const TiendaCheckout = () => {
       // Limpiar carrito y redirigir a la página de pedidos del tenant
       clearCart();
       navigate(`/tienda/${tenant_slug}/pedidos`);
-      
+
     } catch (error) {
       console.error('Error creando pedido:', error);
-      
+
       if (error.response?.data?.message === 'Stock insuficiente, ajuste su pedido') {
         const detalles = error.response.data.detalles;
         let mensaje = 'Stock insuficiente para:\n';
@@ -173,11 +186,10 @@ const TiendaCheckout = () => {
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, metodo_entrega: 'pickup' }))}
-                    className={`p-4 rounded-lg border-2 transition-colors ${
-                      formData.metodo_entrega === 'pickup'
+                    className={`p-4 rounded-lg border-2 transition-colors ${formData.metodo_entrega === 'pickup'
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-gray-300 dark:border-gray-600'
-                    }`}
+                      }`}
                   >
                     <p className="font-medium text-gray-900 dark:text-white">🏪 Retiro en tienda</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Gratis</p>
@@ -185,11 +197,10 @@ const TiendaCheckout = () => {
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, metodo_entrega: 'delivery' }))}
-                    className={`p-4 rounded-lg border-2 transition-colors ${
-                      formData.metodo_entrega === 'delivery'
+                    className={`p-4 rounded-lg border-2 transition-colors ${formData.metodo_entrega === 'delivery'
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-gray-300 dark:border-gray-600'
-                    }`}
+                      }`}
                   >
                     <p className="font-medium text-gray-900 dark:text-white">🚚 Delivery</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">A coordinar</p>

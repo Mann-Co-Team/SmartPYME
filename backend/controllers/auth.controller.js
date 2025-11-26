@@ -67,16 +67,16 @@ class AuthController {
             }
 
             // Generar token JWT (incluye tenant_id si el usuario lo tiene)
-            const tokenData = { 
+            const tokenData = {
                 userId: user.id_usuario,
                 email: user.email,
                 role: user.id_rol
             };
-            
+
             if (user.id_tenant) {
                 tokenData.tenant_id = user.id_tenant;
             }
-            
+
             const token = jwt.sign(
                 tokenData,
                 process.env.JWT_SECRET,
@@ -145,7 +145,7 @@ class AuthController {
             // Verificar tenant del usuario
             const TenantModel = require('../models/tenant.model');
             const tenant = await TenantModel.getBySlug(tenant_slug);
-            
+
             console.log('🔍 DEBUG - Tenant obtenido de BD:', {
                 id: tenant?.id_tenant,
                 nombre: tenant?.nombre_empresa,
@@ -153,7 +153,7 @@ class AuthController {
                 plan: tenant?.plan,
                 completo: tenant
             });
-            
+
             if (!tenant) {
                 return res.status(401).json({
                     success: false,
@@ -195,7 +195,7 @@ class AuthController {
 
             // Generar token JWT con tenant_id
             const token = jwt.sign(
-                { 
+                {
                     userId: user.id_usuario,
                     email: user.email,
                     role: user.id_rol,
@@ -273,7 +273,7 @@ class AuthController {
                     message: 'El correo ingresado ya está registrado'
                 });
             }
-            
+
             // Crear usuario con rol de cliente (id_rol = 3)
             console.log('✅ Creando usuario con rol cliente...');
             const userData = {
@@ -285,10 +285,10 @@ class AuthController {
                 id_rol: 3, // Cliente
                 id_tenant: parseInt(tenant_id) // OBLIGATORIO para aislamiento
             };
-            
+
             console.log(`📍 Asignando usuario al tenant: ${tenant_id}`);
-            
-            const userId = await UsuarioModel.create(userData);
+
+            const userId = await UsuarioModel.create(userData, parseInt(tenant_id));
 
             console.log('✅ Usuario creado exitosamente con ID:', userId);
             res.status(201).json({
@@ -358,7 +358,7 @@ class AuthController {
         try {
             // El middleware ya validó el token, solo devolvemos la info del usuario
             const user = await UsuarioModel.getById(req.user.id_usuario);
-            
+
             res.json({
                 success: true,
                 data: {
@@ -396,7 +396,7 @@ class AuthController {
 
             // Obtener usuario con contraseña
             const user = await UsuarioModel.getByIdWithPassword(userId);
-            
+
             if (!user) {
                 return res.status(404).json({
                     success: false,

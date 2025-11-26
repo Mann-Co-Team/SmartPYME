@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { 
+import {
   HomeIcon,
   ShoppingBagIcon,
   TagIcon,
@@ -11,7 +11,8 @@ import {
   ArrowLeftOnRectangleIcon,
   UserCircleIcon,
   UsersIcon,
-  BellIcon
+  BellIcon,
+  BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
 import NotificationPanel from '../NotificationPanel';
 import DarkModeToggle from '../DarkModeToggle';
@@ -22,11 +23,11 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, darkMode } = useTheme();
-  
+
   // Cargar datos directamente del localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
-  
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
@@ -155,13 +156,12 @@ export default function AdminLayout() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                  active
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                    : darkMode
-                      ? 'text-gray-300 hover:bg-gray-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${active
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                  : darkMode
+                    ? 'text-gray-300 hover:bg-gray-700'
+                    : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <item.icon className={`h-5 w-5 ${active ? 'text-white' : darkMode ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-gray-600'}`} />
                 <span className={`font-medium text-sm ${active ? 'text-white' : ''}`}>
@@ -175,26 +175,36 @@ export default function AdminLayout() {
         {/* User Actions */}
         <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} space-y-2`}>
           <Link
+            to={`/tienda/${tenant_slug}`}
+            target="_blank"
+            className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${darkMode
+                ? 'text-gray-300 hover:bg-gray-700 hover:text-green-400'
+                : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+              }`}
+          >
+            <BuildingStorefrontIcon className={`h-5 w-5 ${darkMode ? 'text-gray-400 group-hover:text-green-400' : 'text-gray-400 group-hover:text-green-600'}`} />
+            <span className="font-medium text-sm">Ver Tienda</span>
+          </Link>
+
+          <Link
             to={`/${tenant_slug}/admin/cambiar-password`}
-            className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-              darkMode 
-                ? 'text-gray-300 hover:bg-gray-700 hover:text-blue-400'
-                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-            }`}
+            className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${darkMode
+              ? 'text-gray-300 hover:bg-gray-700 hover:text-blue-400'
+              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+              }`}
           >
             <svg className={`h-5 w-5 ${darkMode ? 'text-gray-400 group-hover:text-blue-400' : 'text-gray-400 group-hover:text-blue-600'}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
             </svg>
             <span className="font-medium text-sm">Cambiar Contraseña</span>
           </Link>
-          
+
           <button
             onClick={handleLogout}
-            className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-              darkMode
-                ? 'text-gray-300 hover:bg-gray-700 hover:text-red-400'
-                : 'text-gray-700 hover:bg-red-50 hover:text-red-600'
-            }`}
+            className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${darkMode
+              ? 'text-gray-300 hover:bg-gray-700 hover:text-red-400'
+              : 'text-gray-700 hover:bg-red-50 hover:text-red-600'
+              }`}
           >
             <ArrowLeftOnRectangleIcon className={`h-5 w-5 ${darkMode ? 'text-gray-400 group-hover:text-red-400' : 'text-gray-400 group-hover:text-red-600'}`} />
             <span className="font-medium text-sm">Cerrar Sesión</span>
@@ -221,16 +231,15 @@ export default function AdminLayout() {
               <div className="flex items-center space-x-4">
                 {/* Dark Mode Toggle */}
                 <DarkModeToggle />
-                
+
                 {/* Notification Bell */}
                 <div className="relative" ref={notificationRef}>
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
-                    className={`relative p-2 rounded-lg transition-colors ${
-                      darkMode
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
+                    className={`relative p-2 rounded-lg transition-colors ${darkMode
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
                   >
                     <BellIcon className="h-6 w-6" />
                     {unreadCount > 0 && (
@@ -248,9 +257,8 @@ export default function AdminLayout() {
                   )}
                 </div>
 
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
-                }`}>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
+                  }`}>
                   <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
                   En línea
                 </span>

@@ -13,8 +13,8 @@ router.get('/:id', authenticateToken, validateTenant, requireRole([1, 2, 3]), Pe
 // RF-4: Obtener detalle completo con historial de estados
 router.get('/:id/detalle', authenticateToken, validateTenant, requireRole([1, 2, 3]), PedidoController.getDetallePedido);
 
-// Crear pedido - clientes (rol 3)
-router.post('/', authenticateToken, validateTenant, requireRole([3]), PedidoController.create);
+// Crear pedido - clientes (rol 3), admins (rol 1) y empleados (rol 2)
+router.post('/', authenticateToken, validateTenant, requireRole([1, 2, 3]), PedidoController.create);
 
 // Cancelar pedido - cliente puede cancelar su propio pedido si está pendiente
 router.post('/:id/cancelar', authenticateToken, validateTenant, requireRole([3]), PedidoController.cancelarPedido);

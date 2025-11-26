@@ -4,12 +4,12 @@ const UsuarioController = require('../controllers/usuario.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
 const { validateTenant, checkTenantLimit } = require('../middlewares/tenant');
-const { 
-    createUsuario, 
-    updateUsuario, 
-    toggleActive, 
-    getById, 
-    deleteUsuario 
+const {
+    createUsuario,
+    updateUsuario,
+    toggleActive,
+    getById,
+    deleteUsuario
 } = require('../validators/usuario.validator');
 
 // Todas las rutas requieren autenticación y validación de tenant
@@ -20,6 +20,7 @@ router.use(validateTenant);
 router.post('/cambiar-password', UsuarioController.cambiarPassword);
 
 // Rutas para administradores solamente
+router.get('/stats', authorize('manage_users'), UsuarioController.getStats);
 router.get('/', authorize('manage_users'), UsuarioController.getAll);
 router.get('/roles', authorize('manage_users'), UsuarioController.getRoles);
 router.get('/:id', authorize('manage_users'), getById, UsuarioController.getById);

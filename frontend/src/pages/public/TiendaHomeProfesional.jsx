@@ -75,15 +75,15 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
                 ⭐ Plan Profesional
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-8">
               <a href="#inicio" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Inicio</a>
               <a href="#contacto" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Contacto</a>
               <a href="#ubicacion" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Ubicación</a>
-              
+
               <div className="flex items-center space-x-4">
                 <DarkModeToggle />
-                <button 
+                <button
                   onClick={toggleCart}
                   className="relative text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 >
@@ -104,7 +104,7 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
                       <span className="font-medium">{currentUser.nombre}</span>
                       <ChevronDownIcon className="h-4 w-4" />
                     </button>
-                    
+
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                         <button
@@ -136,7 +136,7 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
                     )}
                   </div>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => navigate(`/tienda/${tenant.slug}/login`)}
                     className="border border-gray-900 dark:border-gray-300 text-gray-900 dark:text-gray-300 px-6 py-2 rounded hover:bg-gray-900 dark:hover:bg-gray-700 hover:text-white transition-colors"
                   >
@@ -161,11 +161,10 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
           >
-            <div 
+            <div
               className="h-full bg-cover bg-center"
               style={{ backgroundImage: `url(${slide.image})` }}
             >
@@ -183,7 +182,7 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
             </div>
           </div>
         ))}
-        
+
         {/* Navegación del carrusel */}
         <button className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 transition-colors">
           <svg className="h-6 w-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -225,21 +224,21 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {promoProducts.map((producto, index) => (
-            <div key={producto.id_producto} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+            <div key={producto.id_producto} className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all">
               <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/2 h-64 bg-gray-200 flex items-center justify-center">
+                <div className="md:w-1/2 h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                   {producto.imagen ? (
                     <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-gray-400 text-6xl">👗</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-6xl">👗</span>
                   )}
                 </div>
                 <div className="md:w-1/2 p-6 flex flex-col justify-center">
-                  <h3 className="text-2xl font-bold mb-2">Promo {index + 1}</h3>
-                  <p className="text-gray-600 mb-4">
+                  <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Promo {index + 1}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Un subtítulo para esta sección, tan largo o tan corto como quieras
                   </p>
-                  <button 
+                  <button
                     onClick={() => handleAddToCart(producto)}
                     className="bg-gradient-to-r from-amber-700/90 to-amber-900/90 text-white px-6 py-3 rounded-md hover:from-amber-800 hover:to-amber-950 transition-all w-fit shadow-md backdrop-blur-sm"
                   >
@@ -256,7 +255,7 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
       <section className="bg-white dark:bg-gray-800 py-16 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-12 text-center text-gray-900 dark:text-white">Encabezado de categorías</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {categorias.slice(0, 3).map((categoria, index) => {
               const categoryImages = [
@@ -265,13 +264,13 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
                 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600'
               ];
               return (
-                <div 
+                <div
                   key={categoria.id_categoria}
                   className="group cursor-pointer"
                 >
                   <div className="relative h-72 rounded-lg overflow-hidden mb-4">
-                    <img 
-                      src={categoryImages[index % categoryImages.length]} 
+                    <img
+                      src={categoryImages[index % categoryImages.length]}
                       alt={categoria.nombre}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
@@ -301,7 +300,7 @@ const TiendaHomeProfesional = ({ tenant, categorias, productos }) => {
             <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">✨ Características Profesionales Activas</p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {productos.slice(0, 8).map(producto => (
             <div key={producto.id_producto} className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all">

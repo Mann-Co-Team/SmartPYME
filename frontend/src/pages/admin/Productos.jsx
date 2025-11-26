@@ -79,15 +79,15 @@ export default function AdminProductos() {
     const highlightId = searchParams.get('highlight');
     if (highlightId && productos.length > 0) {
       setHighlightedProductId(parseInt(highlightId));
-      
+
       // Scroll al producto después de un pequeño delay para asegurar que se renderizó
       setTimeout(() => {
         if (highlightRef.current) {
-          highlightRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+          highlightRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
           });
-          
+
           // Quitar el highlight después de 5 segundos
           setTimeout(() => {
             setHighlightedProductId(null);
@@ -124,7 +124,7 @@ export default function AdminProductos() {
     // Búsqueda por término
     if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase();
-      result = result.filter(producto => 
+      result = result.filter(producto =>
         producto.nombre.toLowerCase().includes(term) ||
         producto.descripcion?.toLowerCase().includes(term) ||
         producto.categoria?.toLowerCase().includes(term)
@@ -162,7 +162,7 @@ export default function AdminProductos() {
     // Ordenar
     result.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'nombre':
           comparison = a.nombre.localeCompare(b.nombre);
@@ -256,7 +256,7 @@ export default function AdminProductos() {
       formDataToSend.append('stock', formData.stock);
       formDataToSend.append('id_categoria', formData.id_categoria);
       formDataToSend.append('activo', formData.activo);
-      
+
       if (formData.imagen) {
         formDataToSend.append('imagen', formData.imagen);
       }
@@ -309,7 +309,7 @@ export default function AdminProductos() {
       <div className="flex justify-between items-start mb-6">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
-          
+
           {/* Indicador de Plan */}
           {tenantInfo && (
             <div className="mt-3 inline-flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
@@ -330,10 +330,9 @@ export default function AdminProductos() {
                 {tenantInfo.plan === 'basico' && productos.filter(p => p.activo).length > 0 && (
                   <div className="mt-1 w-48">
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div 
-                        className={`h-1.5 rounded-full transition-all ${
-                          (productos.filter(p => p.activo).length / 50) > 0.8 ? 'bg-red-500' : 'bg-green-500'
-                        }`}
+                      <div
+                        className={`h-1.5 rounded-full transition-all ${(productos.filter(p => p.activo).length / 50) > 0.8 ? 'bg-red-500' : 'bg-green-500'
+                          }`}
                         style={{ width: `${(productos.filter(p => p.activo).length / 50) * 100}%` }}
                       ></div>
                     </div>
@@ -343,7 +342,7 @@ export default function AdminProductos() {
             </div>
           )}
         </div>
-        
+
         <div>
           {canAddMoreProducts() ? (
             <button onClick={openCreateModal} className="btn-primary">
@@ -389,8 +388,8 @@ export default function AdminProductos() {
           </div>
           <input
             type="text"
-            placeholder={tenantInfo?.plan === 'empresarial' 
-              ? "🔍 Búsqueda inteligente: nombre, descripción, categoría... (Plan Empresarial)" 
+            placeholder={tenantInfo?.plan === 'empresarial'
+              ? "🔍 Búsqueda inteligente: nombre, descripción, categoría... (Plan Empresarial)"
               : "Buscar por nombre, descripción o categoría..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -416,7 +415,7 @@ export default function AdminProductos() {
               <span className="text-sm font-semibold text-amber-900">Filtros Premium - Plan Empresarial</span>
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* Filtro por categoría */}
             <div>
@@ -529,11 +528,10 @@ export default function AdminProductos() {
                 <div className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
-                      viewMode === 'grid' 
-                        ? 'bg-indigo-600 text-white' 
+                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'grid'
+                        ? 'bg-indigo-600 text-white'
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                      }`}
                     title="Vista de cuadrícula"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -543,11 +541,10 @@ export default function AdminProductos() {
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
-                      viewMode === 'list' 
-                        ? 'bg-indigo-600 text-white' 
+                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'list'
+                        ? 'bg-indigo-600 text-white'
                         : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                      }`}
                     title="Vista de lista"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -556,7 +553,7 @@ export default function AdminProductos() {
                     <span className="text-xs font-medium hidden sm:inline">Lista</span>
                   </button>
                 </div>
-                
+
                 <button
                   onClick={() => {
                     setSearchTerm('');
@@ -584,11 +581,10 @@ export default function AdminProductos() {
               <div className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-indigo-600 text-white' 
+                  className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'grid'
+                      ? 'bg-indigo-600 text-white'
                       : 'text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                   title="Vista de cuadrícula"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -598,11 +594,10 @@ export default function AdminProductos() {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-indigo-600 text-white' 
+                  className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'list'
+                      ? 'bg-indigo-600 text-white'
                       : 'text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                   title="Vista de lista"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -645,73 +640,71 @@ export default function AdminProductos() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProductos.map((producto) => (
-                <tr 
-                  key={producto.id_producto}
-                  ref={highlightedProductId === producto.id_producto ? highlightRef : null}
-                  className={`transition-colors duration-500 ${
-                    highlightedProductId === producto.id_producto 
-                      ? 'bg-yellow-100 animate-pulse' 
-                      : ''
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-full object-cover"
-                          src={producto.imagen ? `http://localhost:3000${producto.imagen}` : '/placeholder-product.jpg'}
-                          alt={producto.nombre}
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {producto.nombre}
-                          {highlightedProductId === producto.id_producto && (
-                            <span className="ml-2 text-xs text-yellow-600 font-semibold">
-                              ⚠️ Stock Crítico
-                            </span>
-                          )}
+                  <tr
+                    key={producto.id_producto}
+                    ref={highlightedProductId === producto.id_producto ? highlightRef : null}
+                    className={`transition-colors duration-500 ${highlightedProductId === producto.id_producto
+                        ? 'bg-yellow-100 animate-pulse'
+                        : ''
+                      }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <img
+                            className="h-10 w-10 rounded-full object-cover"
+                            src={producto.imagen ? `http://localhost:3000${producto.imagen}` : '/placeholder-product.jpg'}
+                            alt={producto.nombre}
+                          />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {producto.nombre}
+                            {highlightedProductId === producto.id_producto && (
+                              <span className="ml-2 text-xs text-yellow-600 font-semibold">
+                                ⚠️ Stock Crítico
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {producto.categoria}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${producto.precio}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className={producto.stock <= 5 ? 'text-red-600 font-bold' : ''}>
-                      {producto.stock}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      producto.activo 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {producto.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button 
-                      onClick={() => openEditModal(producto)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >
-                      Editar
-                    </button>
-                    {canDeleteProducts && (
-                      <button 
-                        onClick={() => openDeleteConfirm(producto)}
-                        className="text-red-600 hover:text-red-900"
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {producto.categoria}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${producto.precio}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={producto.stock <= 5 ? 'text-red-600 font-bold' : ''}>
+                        {producto.stock}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(producto.activo === 1 || producto.activo === true)
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                        }`}>
+                        {(producto.activo === 1 || producto.activo === true) ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => openEditModal(producto)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-3"
                       >
-                        Eliminar
+                        Editar
                       </button>
-                    )}
-                  </td>
-                </tr>
+                      {canDeleteProducts && (
+                        <button
+                          onClick={() => openDeleteConfirm(producto)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -723,14 +716,13 @@ export default function AdminProductos() {
       {viewMode === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProductos.map((producto) => (
-            <div 
+            <div
               key={producto.id_producto}
               ref={highlightedProductId === producto.id_producto ? highlightRef : null}
-              className={`card overflow-hidden hover:shadow-xl transition-all group ${
-                highlightedProductId === producto.id_producto 
-                  ? 'ring-4 ring-yellow-400 animate-pulse' 
+              className={`card overflow-hidden hover:shadow-xl transition-all group ${highlightedProductId === producto.id_producto
+                  ? 'ring-4 ring-yellow-400 animate-pulse'
                   : ''
-              }`}
+                }`}
             >
               {/* Imagen del producto */}
               <div className="relative h-48 bg-gray-100 overflow-hidden">
@@ -741,12 +733,11 @@ export default function AdminProductos() {
                 />
                 {/* Badge de estado */}
                 <div className="absolute top-2 right-2">
-                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                    producto.activo 
-                      ? 'bg-green-500 text-white' 
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${(producto.activo === 1 || producto.activo === true)
+                      ? 'bg-green-500 text-white'
                       : 'bg-red-500 text-white'
-                  }`}>
-                    {producto.activo ? '✓ Activo' : '✗ Inactivo'}
+                    }`}>
+                    {(producto.activo === 1 || producto.activo === true) ? '✓ Activo' : '✗ Inactivo'}
                   </span>
                 </div>
                 {/* Badge de stock crítico */}
@@ -796,14 +787,14 @@ export default function AdminProductos() {
 
                 {/* Acciones */}
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => openEditModal(producto)}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors font-medium text-sm"
                   >
                     Editar
                   </button>
                   {canDeleteProducts && (
-                    <button 
+                    <button
                       onClick={() => openDeleteConfirm(producto)}
                       className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors font-medium text-sm"
                       title="Eliminar producto"

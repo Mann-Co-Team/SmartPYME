@@ -13,7 +13,7 @@ export default function TiendaPerfil() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('datos'); // 'datos', 'password'
   const [message, setMessage] = useState({ type: '', text: '' });
-  
+
   // Formulario de datos personales
   const [formData, setFormData] = useState({
     nombre: '',
@@ -43,12 +43,27 @@ export default function TiendaPerfil() {
 
       // Cargar tenant
       const tenantResponse = await api.get(`/tenants/slug/${tenant_slug}`);
-      setTenant(tenantResponse.data.data);
+      const tenantData = tenantResponse.data.data;
+      setTenant(tenantData);
 
       // Cargar datos del usuario desde el backend usando el endpoint de perfil
       const userResponse = await api.get('/perfil');
       const userData = userResponse.data.data;
-      
+
+      // VALIDACIÓN MULTI-TENANT: Verificar que el usuario pertenezca a este tenant
+      if (userData.id_tenant && tenantData.id_tenant && userData.id_tenant !== tenantData.id_tenant) {
+        setMessage({
+          type: 'error',
+          text: `🚫 Acceso denegado. Este usuario no pertenece a esta tienda.`
+        });
+        setLoading(false);
+        // Redirigir después de 3 segundos
+        setTimeout(() => {
+          navigate(`/tienda/${tenant_slug}`);
+        }, 3000);
+        return;
+      }
+
       setUser(userData);
       setFormData({
         nombre: userData.nombre || '',
@@ -81,17 +96,17 @@ export default function TiendaPerfil() {
 
     try {
       const response = await api.put('/perfil', formData);
-      
+
       // Actualizar localStorage
       const updatedUser = response.data.data;
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
-      
+
       setMessage({ type: 'success', text: '✅ Perfil actualizado correctamente' });
     } catch (err) {
-      setMessage({ 
-        type: 'error', 
-        text: err.response?.data?.message || 'Error actualizando perfil' 
+      setMessage({
+        type: 'error',
+        text: err.response?.data?.message || 'Error actualizando perfil'
       });
     } finally {
       setSaving(false);
@@ -146,13 +161,13 @@ export default function TiendaPerfil() {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      
+
       setMessage({ type: 'success', text: '✅ Contraseña actualizada correctamente' });
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      setMessage({ 
-        type: 'error', 
-        text: err.response?.data?.message || 'Error cambiando contraseña' 
+      setMessage({
+        type: 'error',
+        text: err.response?.data?.message || 'Error cambiando contraseña'
       });
     } finally {
       setSaving(false);
@@ -168,6 +183,29 @@ export default function TiendaPerfil() {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Mostrar solo mensaje de acceso denegado sin contenido
+  if (message.type === 'error' && message.text.includes('Acceso denegado')) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center">
+          <div className="mb-4">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30">
+              <svg className="h-8 w-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {message.text}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-4">
+            Redirigiendo en 3 segundos...
+          </p>
+        </div>
       </div>
     );
   }
@@ -199,11 +237,10 @@ export default function TiendaPerfil() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Mensaje de feedback */}
         {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800' 
-              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg ${message.type === 'success'
+            ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800'
+            : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
+            }`}>
             {message.text}
           </div>
         )}
@@ -214,21 +251,19 @@ export default function TiendaPerfil() {
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab('datos')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === 'datos'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
+                className={`px-6 py-4 text-sm font-medium border-b-2 ${activeTab === 'datos'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
               >
                 👤 Datos Personales
               </button>
               <button
                 onClick={() => setActiveTab('password')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === 'password'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
+                className={`px-6 py-4 text-sm font-medium border-b-2 ${activeTab === 'password'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
               >
                 🔒 Cambiar Contraseña
               </button>

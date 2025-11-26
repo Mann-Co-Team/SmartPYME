@@ -50,7 +50,7 @@ class ProductoController {
         try {
             const data = { ...req.body };
             const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
-            
+
             // Validar que no exista producto con el mismo nombre
             const existeNombre = await ProductoModel.existsByNombre(data.nombre, tenantId);
             if (existeNombre) {
@@ -61,13 +61,13 @@ class ProductoController {
                         fs.unlinkSync(filePath);
                     }
                 }
-                
+
                 return res.status(400).json({
                     success: false,
                     message: 'Ya existe un producto con ese nombre'
                 });
             }
-            
+
             // Si se subió una imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
@@ -78,7 +78,7 @@ class ProductoController {
             res.status(201).json({
                 success: true,
                 message: 'Producto creado exitosamente',
-                data: { id: productoId }
+                data: { id_producto: productoId }
             });
         } catch (error) {
             // Si hay error y se subió archivo, eliminarlo
@@ -123,7 +123,7 @@ class ProductoController {
                             fs.unlinkSync(filePath);
                         }
                     }
-                    
+
                     return res.status(400).json({
                         success: false,
                         message: 'Ya existe un producto con ese nombre'
@@ -134,7 +134,7 @@ class ProductoController {
             // Si se subió nueva imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
-                
+
                 // Eliminar imagen anterior si existe
                 if (productoActual.imagen) {
                     const oldImagePath = path.join(__dirname, '..', productoActual.imagen);
@@ -184,7 +184,7 @@ class ProductoController {
         try {
             const { id } = req.params;
             const tenantId = req.tenant?.id || req.user?.tenant_id || null;
-            
+
             // Obtener datos para eliminar imagen
             const producto = await ProductoModel.getById(id, tenantId);
             if (!producto) {

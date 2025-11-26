@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  BellIcon, 
-  ShoppingBagIcon, 
-  TruckIcon, 
+import {
+  BellIcon,
+  ShoppingBagIcon,
+  TruckIcon,
   ExclamationTriangleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { 
-  getNotificaciones, 
-  markAsRead, 
+import {
+  getNotificaciones,
+  markAsRead,
   markAllAsRead,
-  deleteReadNotifications 
+  deleteReadNotifications
 } from '../services/notificaciones';
 
 const NotificationPanel = ({ onClose, onUpdateCount }) => {
@@ -43,7 +43,7 @@ const NotificationPanel = ({ onClose, onUpdateCount }) => {
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
-      setNotificaciones(prev => 
+      setNotificaciones(prev =>
         prev.map(n => n.id_notificacion === id ? { ...n, leida: true } : n)
       );
       if (onUpdateCount) {
@@ -112,14 +112,17 @@ const NotificationPanel = ({ onClose, onUpdateCount }) => {
     }
 
     // Navegar según el tipo de referencia al detalle específico
+    // Obtener tenant_slug de la URL actual o del localStorage
+    const pathParts = window.location.pathname.split('/');
+    const tenantSlug = pathParts[1]; // Asumiendo estructura /:tenant_slug/admin/...
+
     if (notif.tipo_referencia === 'pedido' && notif.id_referencia) {
       // Navegar al detalle del pedido específico
-      navigate(`/admin/pedidos/${notif.id_referencia}`);
+      navigate(`/${tenantSlug}/admin/pedidos/${notif.id_referencia}`);
       onClose();
     } else if (notif.tipo_referencia === 'producto' && notif.id_referencia) {
       // Para productos, navegar a la lista con el producto filtrado o seleccionado
-      // Como no hay ruta de detalle, navegar a productos con hash/query del id
-      navigate(`/admin/productos?highlight=${notif.id_referencia}`);
+      navigate(`/${tenantSlug}/admin/productos?highlight=${notif.id_referencia}`);
       onClose();
     } else {
       // Si no hay referencia, navegar a la sección general
@@ -251,22 +254,20 @@ const NotificationPanel = ({ onClose, onUpdateCount }) => {
               <div
                 key={notif.id_notificacion}
                 onClick={() => handleNotificationClick(notif)}
-                className={`p-4 cursor-pointer transition-colors ${
-                  notif.leida
+                className={`p-4 cursor-pointer transition-colors ${notif.leida
                     ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750'
                     : 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-1">
                     {getIconByType(notif.tipo)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${
-                      notif.leida 
-                        ? 'text-gray-900 dark:text-gray-100' 
+                    <p className={`text-sm font-medium ${notif.leida
+                        ? 'text-gray-900 dark:text-gray-100'
                         : 'text-gray-900 dark:text-white font-semibold'
-                    }`}>
+                      }`}>
                       {notif.titulo}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">

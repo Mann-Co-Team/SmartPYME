@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 export default function AdminDetallePedido() {
-  const { id } = useParams();
+  const { tenant_slug, id } = useParams();
   const navigate = useNavigate();
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,13 +50,13 @@ export default function AdminDetallePedido() {
 
   const cambiarEstado = async (nuevoEstadoId) => {
     const estadoNombre = estados.find(e => e.id_estado === parseInt(nuevoEstadoId))?.nombre_estado;
-    
+
     if (!confirm(`¿Cambiar estado del pedido a "${estadoNombre}"?`)) {
       return;
     }
 
     const notas = prompt('Notas del cambio (opcional):');
-    
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:3000/api/pedidos/${id}/cambiar-estado`, {
@@ -140,7 +140,7 @@ export default function AdminDetallePedido() {
     return (
       <div className="space-y-6">
         <button
-          onClick={() => navigate('/admin/pedidos')}
+          onClick={() => navigate(`/${tenant_slug}/admin/pedidos`)}
           className="btn-secondary"
         >
           ← Volver a Pedidos
@@ -166,7 +166,7 @@ export default function AdminDetallePedido() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <button
-            onClick={() => navigate('/admin/pedidos')}
+            onClick={() => navigate(`/${tenant_slug}/admin/pedidos`)}
             className="btn-secondary mb-3"
           >
             ← Volver a Pedidos
@@ -200,7 +200,7 @@ export default function AdminDetallePedido() {
             >
               <option value="" disabled>Seleccionar nuevo estado...</option>
               {estados
-                .filter(estado => 
+                .filter(estado =>
                   estado.id_estado !== pedidoData.id_estado &&
                   estado.nombre_estado !== 'Cancelado'
                 )
@@ -227,15 +227,13 @@ export default function AdminDetallePedido() {
                   return (
                     <div key={index} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                          isEstadoActual ? getEstadoColor(item.estado).replace('100', '200') : 'bg-gray-200 text-gray-600'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${isEstadoActual ? getEstadoColor(item.estado).replace('100', '200') : 'bg-gray-200 text-gray-600'
+                          }`}>
                           {getEstadoIcon(item.estado)}
                         </div>
                         {index < historial.length - 1 && (
-                          <div className={`w-0.5 h-full min-h-[2rem] ${
-                            isEstadoActual ? 'bg-blue-300' : 'bg-gray-300'
-                          }`}></div>
+                          <div className={`w-0.5 h-full min-h-[2rem] ${isEstadoActual ? 'bg-blue-300' : 'bg-gray-300'
+                            }`}></div>
                         )}
                       </div>
                       <div className="flex-1 pb-4">
@@ -302,7 +300,7 @@ export default function AdminDetallePedido() {
                   </div>
                 </div>
               ))}
-              
+
               <div className="pt-4 border-t-2 border-gray-300">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-gray-900">Total:</span>
@@ -327,14 +325,14 @@ export default function AdminDetallePedido() {
                   {pedidoData.tipo_entrega === 'delivery' ? '🚚 Delivery' : '🏪 Retiro en local'}
                 </p>
               </div>
-              
+
               {pedidoData.tipo_entrega === 'delivery' && pedidoData.direccion_entrega && (
                 <div>
                   <span className="font-medium text-gray-700">Dirección:</span>
                   <p className="text-gray-900 mt-1">{pedidoData.direccion_entrega}</p>
                 </div>
               )}
-              
+
               <div>
                 <span className="font-medium text-gray-700">Método de Pago:</span>
                 <p className="text-gray-900 mt-1 capitalize">{pedidoData.metodo_pago}</p>

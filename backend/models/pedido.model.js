@@ -58,32 +58,7 @@ class PedidoModel {
     }
 
     static async getByUserId(userId, tenantId = null) {
-        // Obtener email del usuario y luego buscar el cliente
-        const userQuery = tenantId
-            ? 'SELECT email FROM usuarios WHERE id_usuario = ? AND id_tenant = ?'
-            : 'SELECT email FROM usuarios WHERE id_usuario = ?';
-        
-        const userParams = tenantId ? [userId, tenantId] : [userId];
-        const [usuario] = await db.execute(userQuery, userParams);
-        
-        if (!usuario.length) {
-            return [];
-        }
-        
-        // Buscar cliente por email
-        const clienteQuery = tenantId
-            ? 'SELECT id_cliente FROM clientes WHERE email = ? AND id_tenant = ?'
-            : 'SELECT id_cliente FROM clientes WHERE email = ?';
-        
-        const clienteParams = tenantId ? [usuario[0].email, tenantId] : [usuario[0].email];
-        const [cliente] = await db.execute(clienteQuery, clienteParams);
-        
-        if (!cliente.length) {
-            return [];
-        }
-        
-        const clienteId = cliente[0].id_cliente;
-        
+        // Consultar pedidos directamente usando id_usuario (arquitectura unificada)
         const pedidosQuery = tenantId
             ? `SELECT 
                 p.id_pedido,
@@ -95,11 +70,11 @@ class PedidoModel {
                 p.metodo_pago,
                 p.notas,
                 p.created_at,
-                CONCAT(c.nombre, ' ', c.apellido) AS cliente
+                CONCAT(u.nombre, ' ', u.apellido) AS cliente
             FROM pedidos p
             LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
-            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-            WHERE p.id_cliente = ? AND p.id_tenant = ?
+            LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+            WHERE p.id_usuario = ? AND p.id_tenant = ?
             ORDER BY p.fecha_pedido DESC`
             : `SELECT 
                 p.id_pedido,
@@ -107,22 +82,22 @@ class PedidoModel {
                 p.id_estado,
                 p.fecha_pedido,
                 p.total,
-                e.nombre_estado,
+                e.nombre_estado AS estado,
                 p.metodo_pago,
                 p.notas,
                 p.created_at,
-                CONCAT(c.nombre, ' ', c.apellido) AS cliente
+                CONCAT(u.nombre, ' ', u.apellido) AS cliente
             FROM pedidos p
             LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
-            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-            WHERE p.id_cliente = ?
+            LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+            WHERE p.id_usuario = ?
             ORDER BY p.fecha_pedido DESC`;
-        
-        const pedidosParams = tenantId ? [clienteId, tenantId] : [clienteId];
-        const [rows] = await db.execute(pedidosQuery, pedidosParams);
-        
+
+        const pedidosParams = tenantId ? [userId, tenantId] : [userId];
+        const [pedidos] = await db.execute(pedidosQuery, pedidosParams);
+
         // Obtener detalle de productos para cada pedido
-        for (let pedido of rows) {
+        for (let pedido of pedidos) {
             const [detalle] = await db.execute(`
                 SELECT 
                     dp.cantidad,
@@ -136,8 +111,8 @@ class PedidoModel {
             `, [pedido.id_pedido]);
             pedido.productos = detalle;
         }
-        
-        return rows;
+
+        return pedidos;
     }
 
     static async getById(id, tenantId = null) {
@@ -168,7 +143,7 @@ class PedidoModel {
                LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
                LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
                WHERE p.id_pedido = ?`;
-        
+
         const params = tenantId ? [id, tenantId] : [id];
         const [rows] = await db.execute(query, params);
 
@@ -195,28 +170,28 @@ class PedidoModel {
     // Validar stock disponible para todos los items del pedido
     static async validarStock(items) {
         const productosInsuficientes = [];
-        
+
         for (let item of items) {
             const [rows] = await db.execute(
                 'SELECT nombre, stock FROM productos WHERE id_producto = ?',
                 [item.id_producto]
             );
-            
+
             if (rows.length === 0) {
-                productosInsuficientes.push({ 
-                    nombre: 'Producto desconocido', 
-                    solicitado: item.cantidad, 
-                    disponible: 0 
+                productosInsuficientes.push({
+                    nombre: 'Producto desconocido',
+                    solicitado: item.cantidad,
+                    disponible: 0
                 });
             } else if (rows[0].stock < item.cantidad) {
-                productosInsuficientes.push({ 
-                    nombre: rows[0].nombre, 
-                    solicitado: item.cantidad, 
-                    disponible: rows[0].stock 
+                productosInsuficientes.push({
+                    nombre: rows[0].nombre,
+                    solicitado: item.cantidad,
+                    disponible: rows[0].stock
                 });
             }
         }
-        
+
         return productosInsuficientes;
     }
 
@@ -232,32 +207,32 @@ class PedidoModel {
 
     static async create(data) {
         const connection = await db.getConnection();
-        
+
         try {
             await connection.beginTransaction();
-            
+
             const { id_cliente, id_usuario_cliente, id_usuario, items, total, metodo_pago, notas } = data;
-            
+
             // Validar stock antes de crear pedido
             const productosInsuficientes = await this.validarStock(items);
             if (productosInsuficientes.length > 0) {
-                throw { 
-                    code: 'STOCK_INSUFICIENTE', 
-                    productos: productosInsuficientes 
+                throw {
+                    code: 'STOCK_INSUFICIENTE',
+                    productos: productosInsuficientes
                 };
             }
-            
+
             // Usar id_usuario_cliente directamente (sistema unificado con tabla usuarios)
             const usuarioClienteId = id_usuario_cliente || id_usuario;
             const tenantId = data.id_tenant || 1;
-            
+
             if (!usuarioClienteId) {
                 throw new Error('Se requiere el ID del usuario para crear el pedido');
             }
-            
+
             // Generar número de pedido único
             const numeroPedido = this.generarNumeroPedido();
-            
+
             // Insertar pedido usando id_usuario directamente (sin tabla clientes)
             const [result] = await connection.execute(`
                 INSERT INTO pedidos (numero_pedido, id_tenant, id_usuario, total, metodo_pago, notas)
@@ -269,13 +244,13 @@ class PedidoModel {
             // Insertar detalle y actualizar stock
             const productosConStockBajo = [];
             const productosAgotados = [];
-            
+
             for (let item of items) {
                 await connection.execute(`
                     INSERT INTO detalle_pedidos (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
                     VALUES (?, ?, ?, ?, ?)
                 `, [pedidoId, item.id_producto, item.cantidad, item.precio_unitario, item.subtotal]);
-                
+
                 // Decrementar stock
                 await connection.execute(`
                     UPDATE productos SET stock = stock - ? WHERE id_producto = ?
@@ -289,7 +264,7 @@ class PedidoModel {
 
                 if (productoActual.length > 0) {
                     const stockActual = productoActual[0].stock;
-                    
+
                     // Stock agotado (0)
                     if (stockActual === 0) {
                         productosAgotados.push({
@@ -310,20 +285,20 @@ class PedidoModel {
             }
 
             await connection.commit();
-            
+
             // Obtener el número de pedido generado
             const [pedidoInfo] = await connection.execute(
                 'SELECT numero_pedido FROM pedidos WHERE id_pedido = ?',
                 [pedidoId]
             );
-            
-            return { 
+
+            return {
                 id: pedidoId,
                 numero_pedido: pedidoInfo[0]?.numero_pedido || pedidoId,
                 productosConStockBajo: productosConStockBajo.length > 0 ? productosConStockBajo : null,
                 productosAgotados: productosAgotados.length > 0 ? productosAgotados : null
             };
-            
+
         } catch (error) {
             await connection.rollback();
             console.error('❌ Error en PedidoModel.create:', error.message, error.code);
@@ -338,7 +313,7 @@ class PedidoModel {
         const query = tenantId
             ? `UPDATE pedidos SET id_estado = ? WHERE id_pedido = ? AND id_tenant = ?`
             : `UPDATE pedidos SET id_estado = ? WHERE id_pedido = ?`;
-        
+
         const params = tenantId ? [id_estado, id, tenantId] : [id_estado, id];
         const [result] = await db.execute(query, params);
         return result.affectedRows > 0;
@@ -348,7 +323,7 @@ class PedidoModel {
         const query = tenantId
             ? `DELETE FROM pedidos WHERE id_pedido = ? AND id_tenant = ?`
             : `DELETE FROM pedidos WHERE id_pedido = ?`;
-        
+
         const params = tenantId ? [id, tenantId] : [id];
         const [result] = await db.execute(query, params);
         return result.affectedRows > 0;
@@ -370,14 +345,14 @@ class PedidoModel {
             LEFT JOIN estados_pedido e ON p.id_estado = e.id_estado
             WHERE p.id_pedido = ? AND u.id_usuario = ?
         `, [pedidoId, userId]);
-        
+
         return rows.length > 0 ? rows[0] : null;
     }
 
     // Cancelar pedido y devolver stock
     static async cancelarPedido(pedidoId) {
         const connection = await db.getConnection();
-        
+
         try {
             await connection.beginTransaction();
 
@@ -427,14 +402,14 @@ class PedidoModel {
         const [estadoSolicitud] = await db.execute(`
             SELECT id_estado FROM estados_pedido WHERE nombre_estado LIKE '%Cancelaci%'
         `);
-        
+
         const [result] = await db.execute(`
             UPDATE pedidos 
             SET id_estado = ?,
                 notas = CONCAT(COALESCE(notas, ''), '\n[SOLICITUD CANCELACIÓN] ', ?)
             WHERE id_pedido = ?
         `, [estadoSolicitud[0]?.id_estado || 1, motivo, pedidoId]);
-        
+
         return result.affectedRows > 0;
     }
 
@@ -444,19 +419,19 @@ class PedidoModel {
         const [estadoConfirmado] = await db.execute(`
             SELECT id_estado FROM estados_pedido WHERE nombre_estado = 'Confirmado'
         `);
-        
+
         const [result] = await db.execute(`
             UPDATE pedidos 
             SET id_estado = ?,
                 notas = CONCAT(COALESCE(notas, ''), '\n[CANCELACIÓN RECHAZADA] ', NOW())
             WHERE id_pedido = ?
         `, [estadoConfirmado[0].id_estado, pedidoId]);
-        
+
         return result.affectedRows > 0;
     }
 
     // ==================== RF-4: SEGUIMIENTO DE ESTADO ====================
-    
+
     // Obtener historial de estados de un pedido
     static async getHistorialEstados(pedidoId) {
         const [rows] = await db.execute(`
@@ -474,7 +449,7 @@ class PedidoModel {
             WHERE h.id_pedido = ?
             ORDER BY h.fecha_cambio ASC
         `, [pedidoId]);
-        
+
         return rows;
     }
 
@@ -485,6 +460,7 @@ class PedidoModel {
             SELECT 
                 p.id_pedido,
                 p.id_cliente,
+                p.id_usuario,
                 p.fecha_pedido,
                 p.total,
                 p.id_estado,
@@ -509,21 +485,32 @@ class PedidoModel {
 
         // Si se proporciona userId (cliente), verificar que el pedido pertenece al usuario
         if (userId) {
-            const [usuario] = await db.execute(
-                'SELECT email FROM usuarios WHERE id_usuario = ?',
-                [userId]
-            );
-            
-            if (usuario.length === 0) {
-                return null;
+            // Verificación principal: coincidencia de id_usuario (sistema nuevo)
+            if (pedidoData.id_usuario && pedidoData.id_usuario === userId) {
+                // Es válido, continuar
             }
+            // Verificación legacy: coincidencia de id_cliente (sistema antiguo)
+            else if (pedidoData.id_cliente) {
+                const [usuario] = await db.execute(
+                    'SELECT email FROM usuarios WHERE id_usuario = ?',
+                    [userId]
+                );
 
-            const [cliente] = await db.execute(
-                'SELECT id_cliente FROM clientes WHERE email = ?',
-                [usuario[0].email]
-            );
+                if (usuario.length === 0) {
+                    return null;
+                }
 
-            if (cliente.length === 0 || cliente[0].id_cliente !== pedidoData.id_cliente) {
+                const [cliente] = await db.execute(
+                    'SELECT id_cliente FROM clientes WHERE email = ?',
+                    [usuario[0].email]
+                );
+
+                if (cliente.length === 0 || cliente[0].id_cliente !== pedidoData.id_cliente) {
+                    return null;
+                }
+            }
+            // Si no tiene id_usuario ni id_cliente coincidente
+            else {
                 return null;
             }
         }
@@ -576,7 +563,7 @@ class PedidoModel {
     // Cambiar estado de un pedido (solo admin/empleado)
     static async cambiarEstado(pedidoId, nuevoEstadoId, usuarioId, notas = null) {
         const connection = await db.getConnection();
-        
+
         try {
             // RF-7: Obtener estado actual del pedido
             const [pedidoActual] = await connection.execute(

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 
 // RF-7: Transiciones válidas de estados (deben coincidir con el backend)
 const TRANSICIONES_VALIDAS = {
@@ -27,6 +27,7 @@ export default function AdminPedidos() {
   const [observaciones, setObservaciones] = useState('');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { tenant_slug } = useParams();
 
   useEffect(() => {
     cargarDatos();
@@ -51,7 +52,7 @@ export default function AdminPedidos() {
       const resPedidos = await fetch('http://localhost:3000/api/pedidos', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (!resPedidos.ok) throw new Error('Error al cargar pedidos');
       const dataPedidos = await resPedidos.json();
 
@@ -67,7 +68,7 @@ export default function AdminPedidos() {
       ];
 
       const pedidosData = dataPedidos.data || dataPedidos;
-      
+
       // Mapear nombre_estado a id_estado si no viene en la respuesta
       const pedidosConId = pedidosData.map(pedido => {
         if (!pedido.id_estado && pedido.nombre_estado) {
@@ -172,8 +173,8 @@ export default function AdminPedidos() {
   const pedidosFiltrados = filtroEstado === 'todos'
     ? pedidos
     : filtroEstado === 'activos'
-    ? pedidos.filter(p => ESTADOS_ACTIVOS.includes(p.id_estado))
-    : pedidos.filter(p => p.id_estado === parseInt(filtroEstado));
+      ? pedidos.filter(p => ESTADOS_ACTIVOS.includes(p.id_estado))
+      : pedidos.filter(p => p.id_estado === parseInt(filtroEstado));
 
   if (loading) {
     return (
@@ -241,7 +242,7 @@ export default function AdminPedidos() {
                       {pedido.nombre_estado}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                     <div>
                       <span className="font-medium">Cliente:</span> {pedido.cliente}
@@ -276,7 +277,7 @@ export default function AdminPedidos() {
                 {/* Acciones */}
                 <div className="flex flex-col gap-3 lg:w-64">
                   <button
-                    onClick={() => navigate(`/admin/pedidos/${pedido.id_pedido}`)}
+                    onClick={() => navigate(`/${tenant_slug}/admin/pedidos/${pedido.id_pedido}`)}
                     className="btn-secondary w-full"
                   >
                     📋 Ver Detalle

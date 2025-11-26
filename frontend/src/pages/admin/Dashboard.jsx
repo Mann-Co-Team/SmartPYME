@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { tenant_slug } = useParams();
   const [metricas, setMetricas] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       const res = await fetch('http://localhost:3000/api/dashboard/metricas', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -136,7 +137,7 @@ export default function AdminDashboard() {
                   <p className="text-sm opacity-75">Plan {tenantInfo.plan.charAt(0).toUpperCase() + tenantInfo.plan.slice(1)}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div className="bg-white bg-opacity-50 rounded-lg p-3">
                   <div className="flex items-center justify-between">
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
                   {tenantInfo.plan === 'basico' && metricas?.estadisticas?.productos_activos && (
                     <div className="mt-2">
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-primary-500 h-2 rounded-full transition-all"
                           style={{ width: `${(metricas.estadisticas.productos_activos / 50) * 100}%` }}
                         ></div>
@@ -206,8 +207,8 @@ export default function AdminDashboard() {
 
       {/* Tarjetas de métricas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div 
-          onClick={() => navigate('/admin/reportes?periodo=dia')}
+        <div
+          onClick={() => navigate(`/${tenant_slug}/admin/reportes?periodo=dia`)}
           className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between">
@@ -222,8 +223,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div 
-          onClick={() => navigate('/admin/reportes?periodo=mes')}
+        <div
+          onClick={() => navigate(`/${tenant_slug}/admin/reportes?periodo=mes`)}
           className="card p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between">
@@ -238,8 +239,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div 
-          onClick={() => navigate('/admin/reportes?periodo=anio')}
+        <div
+          onClick={() => navigate(`/${tenant_slug}/admin/reportes?periodo=anio`)}
           className="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between">
@@ -254,8 +255,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div 
-          onClick={() => navigate('/admin/pedidos?filter=activos')}
+        <div
+          onClick={() => navigate(`/${tenant_slug}/admin/pedidos?filter=activos`)}
           className="card p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between">
@@ -277,7 +278,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">📊 Pedidos por Estado</h2>
             <button
-              onClick={() => navigate('/admin/pedidos')}
+              onClick={() => navigate(`/${tenant_slug}/admin/pedidos`)}
               className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
             >
               Ver todos →
@@ -285,20 +286,19 @@ export default function AdminDashboard() {
           </div>
           <div className="space-y-3">
             {metricas.pedidosPorEstado.map((estado) => (
-              <div 
-                key={estado.id_estado} 
+              <div
+                key={estado.id_estado}
                 className="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    estado.id_estado === 1 ? 'bg-yellow-400' :
+                  <div className={`w-3 h-3 rounded-full ${estado.id_estado === 1 ? 'bg-yellow-400' :
                     estado.id_estado === 2 ? 'bg-blue-400' :
-                    estado.id_estado === 3 ? 'bg-purple-400' :
-                    estado.id_estado === 4 ? 'bg-green-400' :
-                    estado.id_estado === 5 ? 'bg-indigo-400' :
-                    estado.id_estado === 6 ? 'bg-green-600' :
-                    'bg-red-400'
-                  }`}></div>
+                      estado.id_estado === 3 ? 'bg-purple-400' :
+                        estado.id_estado === 4 ? 'bg-green-400' :
+                          estado.id_estado === 5 ? 'bg-indigo-400' :
+                            estado.id_estado === 6 ? 'bg-green-600' :
+                              'bg-red-400'
+                    }`}></div>
                   <span className="text-gray-700">{estado.nombre_estado}</span>
                 </div>
                 <span className="font-semibold text-gray-900">{estado.cantidad}</span>
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">🏆 Productos Más Vendidos</h2>
             <button
-              onClick={() => navigate('/admin/productos')}
+              onClick={() => navigate(`/${tenant_slug}/admin/productos`)}
               className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
             >
               Ver todos →
@@ -322,9 +322,9 @@ export default function AdminDashboard() {
               <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
             ) : (
               metricas.productosTop.map((producto, index) => (
-                <div 
-                  key={producto.id_producto} 
-                  onClick={() => navigate(`/admin/productos?highlight=${producto.id_producto}`)}
+                <div
+                  key={producto.id_producto}
+                  onClick={() => navigate(`/${tenant_slug}/admin/productos?highlight=${producto.id_producto}`)}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -349,26 +349,13 @@ export default function AdminDashboard() {
 
       {/* Estadísticas adicionales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div 
-          onClick={() => navigate('/admin/pedidos?filter=6')}
+        <div
+          onClick={() => navigate(`/${tenant_slug}/admin/pedidos?filter=6`)}
           className="card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="text-4xl mb-2">✅</div>
           <p className="text-sm text-gray-600">Pedidos Completados</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">
-            {metricas.estadisticas.pedidos_completados}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">👆 Click para ver</p>
-        </div>
-
-        <div 
-          onClick={() => navigate('/admin/productos')}
-          className="card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
-        >
-          <div className="text-4xl mb-2">🛍️</div>
-          <p className="text-sm text-gray-600">Productos Activos</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">
-            {metricas.estadisticas.productos_activos}
           </p>
           <p className="text-xs text-gray-500 mt-2">👆 Click para ver</p>
         </div>
@@ -387,7 +374,7 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">📂 Resumen por Categorías</h2>
           <button
-            onClick={() => navigate('/admin/categorias')}
+            onClick={() => navigate(`/${tenant_slug}/admin/categorias`)}
             className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
           >
             Gestionar categorías →

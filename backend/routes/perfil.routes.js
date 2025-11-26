@@ -11,8 +11,10 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
     try {
         const userId = req.user.userId;
-        // No pasar tenantId para que obtenga el usuario sin filtrar por tenant
-        const usuario = await UsuarioModel.getById(userId, null);
+        const tenantId = req.user.tenant_id;
+
+        // Usar tenant_id para asegurar aislamiento de datos
+        const usuario = await UsuarioModel.getById(userId, tenantId);
 
         if (!usuario) {
             return res.status(404).json({
@@ -38,10 +40,11 @@ router.get('/', async (req, res) => {
 router.put('/', async (req, res) => {
     try {
         const userId = req.user.userId;
+        const tenantId = req.user.tenant_id;
         const { nombre, apellido, email, telefono } = req.body;
 
-        // Validar que el usuario existe (sin filtrar por tenant)
-        const usuarioActual = await UsuarioModel.getById(userId, null);
+        // Validar que el usuario existe y pertenece al tenant
+        const usuarioActual = await UsuarioModel.getById(userId, tenantId);
         if (!usuarioActual) {
             return res.status(404).json({
                 success: false,
@@ -70,7 +73,7 @@ router.put('/', async (req, res) => {
         );
 
         // Obtener usuario actualizado
-        const usuarioActualizado = await UsuarioModel.getById(userId, null);
+        const usuarioActualizado = await UsuarioModel.getById(userId, tenantId);
 
         res.json({
             success: true,

@@ -51,6 +51,12 @@ class UsuarioController {
                 });
             }
 
+            // Convertir rol string a id_rol si es necesario
+            if (userData.rol && !userData.id_rol) {
+                const rolMap = { 'admin': 1, 'empleado': 2, 'cliente': 3 };
+                userData.id_rol = rolMap[userData.rol.toLowerCase()] || 3;
+            }
+
             // Validar que el rol exista
             const roles = await UsuarioModel.getRoles();
             const rolValido = roles.some(r => r.id_rol === userData.id_rol);
@@ -74,7 +80,7 @@ class UsuarioController {
                         2: 'Básico (máx. 2 usuarios)',
                         5: 'Profesional (máx. 5 usuarios)'
                     };
-                    
+
                     return res.status(400).json({
                         success: false,
                         message: `Has alcanzado el límite de usuarios para tu plan ${planNames[userLimit] || ''}. Actualiza tu plan para agregar más usuarios.`
@@ -87,7 +93,7 @@ class UsuarioController {
             res.status(201).json({
                 success: true,
                 message: 'Usuario creado exitosamente',
-                data: { id: userId }
+                data: { id_usuario: userId }
             });
         } catch (error) {
             console.error('Error creando usuario:', error);
@@ -150,6 +156,12 @@ class UsuarioController {
                         message: 'Ya existe un usuario con ese email'
                     });
                 }
+            }
+
+            // Convertir rol string a id_rol si es necesario
+            if (userData.rol && !userData.id_rol) {
+                const rolMap = { 'admin': 1, 'empleado': 2, 'cliente': 3 };
+                userData.id_rol = rolMap[userData.rol.toLowerCase()] || 3;
             }
 
             // Si se cambia el rol, validar que exista
@@ -311,6 +323,37 @@ class UsuarioController {
 
         } catch (error) {
             console.error('Error cambiando contraseña:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    }
+
+    // Obtener estadísticas de usuarios
+    static async getStats(req, res) {
+        try {
+            const tenantId = req.tenant?.id || req.user?.tenant_id || null;
+            const usuarios = await UsuarioModel.getAll(tenantId);
+
+            // Contar por rol
+            const porRol = usuarios.reduce((acc, user) => {
+                const rol = user.rol || 'Sin rol';
+                acc[rol] = (acc[rol] || 0) + 1;
+                return acc;
+            }, {});
+
+            res.json({
+                success: true,
+                data: {
+                    total: usuarios.length,
+                    porRol,
+                    activos: usuarios.filter(u => u.activo).length,
+                    inactivos: usuarios.filter(u => !u.activo).length
+                }
+            });
+        } catch (error) {
+            console.error('Error obteniendo estadísticas:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'

@@ -1,0 +1,214 @@
+﻿
+> smartpyme-backend@1.0.0 test
+> cross-env NODE_ENV=test jest --detectOpenHandles --forceExit tests/pedidos.test.js
+
+  console.log
+    Ô£à Rutas de autenticaci├│n cargadas
+
+      at Object.log (app.js:35:13)
+
+  console.log
+    Ô£à Rutas de usuarios cargadas
+
+      at Object.log (app.js:42:13)
+
+  console.log
+    Ô£à Rutas de productos cargadas
+
+      at Object.log (app.js:49:13)
+
+  console.log
+    Ô£à Rutas de categor├¡as cargadas
+
+      at Object.log (app.js:56:13)
+
+  console.log
+    Ô£à Rutas de pedidos cargadas
+
+      at Object.log (app.js:63:13)
+
+  console.log
+    Ô£à Rutas de configuraciones cargadas
+
+      at Object.log (app.js:70:13)
+
+  console.log
+    Ô£à Rutas de tenants cargadas
+
+      at Object.log (app.js:77:13)
+
+  console.log
+    Ô£à Rutas de estados cargadas
+
+      at Object.log (app.js:84:13)
+
+  console.log
+    Ô£à Rutas de dashboard cargadas
+
+      at Object.log (app.js:91:13)
+
+  console.log
+    Ô£à Rutas de recuperaci├│n de contrase├▒a cargadas
+
+      at Object.log (app.js:98:13)
+
+  console.log
+    Ô£à Rutas de reportes cargadas
+
+      at Object.log (app.js:105:13)
+
+  console.log
+    Ô£à Rutas de notificaciones cargadas
+
+      at Object.log (app.js:112:13)
+
+  console.log
+    Ô£à Rutas de clientes cargadas
+
+      at Object.log (app.js:119:13)
+
+  console.log
+    Ô£à Rutas de cat├ílogo p├║blico cargadas
+
+      at Object.log (app.js:126:13)
+
+  console.log
+    Ô£à Rutas de perfil cargadas
+
+      at Object.log (app.js:133:13)
+
+  console.log
+    ­ƒôØ Registro p├║blico - Body recibido: {
+      nombre: 'Test',
+      apellido: 'Client',
+      email: 'client_1764130410597@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:246:17)
+
+  console.log
+    ­ƒöì Verificando email: client_1764130410597@example.com
+
+      at log (controllers/auth.controller.js:269:21)
+
+  console.log
+    Ô£à Creando usuario con rol cliente...
+
+      at log (controllers/auth.controller.js:280:21)
+
+  console.log
+    ­ƒôì Asignando usuario al tenant: 18
+
+      at log (controllers/auth.controller.js:291:21)
+
+  console.log
+    Ô£à Usuario creado exitosamente con ID: 105
+
+      at log (controllers/auth.controller.js:295:21)
+
+  console.log
+    LOGIN P├ÜBLICO - BODY RECIBIDO: {
+      email: 'client_1764130410597@example.com',
+      password: 'password123',
+      tenant_id: 18
+    }
+
+      at log (controllers/auth.controller.js:7:17)
+
+  console.log
+    DEBUG LOGIN: User Tenant: 1 (number), Req Tenant: 18 (number)
+
+      at log (controllers/auth.controller.js:45:21)
+
+  console.error
+    Client login failed: {
+      success: false,
+      message: 'No tienes acceso a esta tienda. Este correo pertenece a otra tienda.',
+      debug: { userTenant: 1, reqTenant: 18 }
+    }
+
+    [0m [90m 39 |[39m             })[33m;[39m
+     [90m 40 |[39m             [36mif[39m ([33m![39mclientLogin[33m.[39mbody[33m.[39msuccess) {
+    [31m[1m>[22m[39m[90m 41 |[39m                 console[33m.[39merror([32m'Client login failed:'[39m[33m,[39m clientLogin[33m.[39mbody)[33m;[39m
+     [90m    |[39m                         [31m[1m^[22m[39m
+     [90m 42 |[39m                 [36mthrow[39m [36mnew[39m [33mError[39m([32m'Client login failed'[39m)[33m;[39m
+     [90m 43 |[39m             }
+     [90m 44 |[39m             clientToken [33m=[39m clientLogin[33m.[39mbody[33m.[39mdata[33m.[39mtoken[33m;[39m[0m
+
+      at Object.error (tests/pedidos.test.js:41:25)
+
+  console.error
+    Setup failed: Error: Client login failed
+        at Object.<anonymous> (C:\Users\nicos\OneDrive\Documentos\GitHub\SmartPYME\backend\tests\pedidos.test.js:42:23)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+    [0m [90m 59 |[39m             console[33m.[39mlog([32m'Setup complete. Tenant:'[39m[33m,[39m tenantId[33m,[39m [32m'Product:'[39m[33m,[39m productId)[33m;[39m
+     [90m 60 |[39m         } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 61 |[39m             console[33m.[39merror([32m'Setup failed:'[39m[33m,[39m error)[33m;[39m
+     [90m    |[39m                     [31m[1m^[22m[39m
+     [90m 62 |[39m             [36mthrow[39m error[33m;[39m
+     [90m 63 |[39m         }
+     [90m 64 |[39m     })[33m;[39m[0m
+
+      at Object.error (tests/pedidos.test.js:61:21)
+
+---------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------
+File                             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                     
+---------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------
+All files                        |   17.84 |     2.87 |    3.33 |    17.9 |                                                                       
+ backend                         |   71.76 |       10 |       0 |   71.76 |                                                                       
+  app.js                         |   71.76 |       10 |       0 |   71.76 | 25,37,44,51,58,65,72,79,86,93,100,107,114,121,128,135,140,154-171,180 
+ backend/controllers             |    6.88 |     2.74 |    2.22 |     6.9 |                                                                       
+  auth.controller.js             |   25.45 |    22.72 |   33.33 |   25.45 | 13,21,30,38,55-237,252-253,261-262,272-273,303-426                    
+  categoria.controller.js        |    5.19 |        0 |       0 |    5.19 | 7-200                                                                 
+  cliente.controller.js          |    4.76 |        0 |       0 |    4.76 | 7-217                                                                 
+  dashboard.controller.js        |   10.52 |        0 |       0 |   10.52 | 6-52                                                                  
+  notificaciones.controller.js   |    6.38 |        0 |       0 |    6.38 | 6-136                                                                 
+  passwordRecovery.controller.js |    8.16 |        0 |       0 |    8.16 | 8-141                                                                 
+  pedido.controller.js           |    2.63 |        0 |       0 |    2.63 | 7-468                                                                 
+  producto.controller.js         |    4.16 |        0 |       0 |    4.16 | 7-256                                                                 
+  reportes.controller.js         |    4.31 |        0 |       0 |    4.31 | 11-342                                                                
+  settings.controller.js         |    7.14 |        0 |       0 |    7.14 | 5-77                                                                  
+  tenant.controller.js           |     5.1 |        0 |       0 |     5.1 | 11-557                                                                
+  usuario.controller.js          |    2.77 |        0 |       0 |    2.83 | 7-314                                                                 
+ backend/middlewares             |   19.27 |        0 |   33.33 |   19.27 |                                                                       
+  auth.js                        |   26.08 |        0 |   33.33 |   26.08 | 5-38,44-52                                                            
+  permissions.js                 |   36.36 |        0 |      50 |   36.36 | 32-49                                                                 
+  tenant.js                      |   12.24 |        0 |      25 |   12.24 | 14-70,82-100,110-159                                                  
+ backend/models                  |    5.58 |      1.2 |    2.19 |    5.61 |                                                                       
+  categoria.model.js             |    4.65 |        0 |       0 |    4.65 | 5-127                                                                 
+  cliente.model.js               |    4.47 |        0 |       0 |    4.47 | 7-143                                                                 
+  dashboard.model.js             |    7.69 |        0 |       0 |    7.69 | 6-150                                                                 
+  notificaciones.model.js        |    4.34 |        0 |       0 |    4.34 | 6-185                                                                 
+  passwordRecovery.model.js      |   27.27 |        0 |       0 |   27.27 | 7-41                                                                  
+  pedido.model.js                |    2.11 |        0 |       0 |    2.12 | 16-609                                                                
+  producto.model.js              |    6.06 |        0 |       0 |    6.06 | 5-137                                                                 
+  reportes.model.js              |    4.76 |        0 |       0 |    4.76 | 9-255                                                                 
+  settings.model.js              |    8.69 |      100 |       0 |    8.69 | 5-67                                                                  
+  tenant.model.js                |    2.73 |        0 |       0 |    2.77 | 8-314                                                                 
+  usuario.model.js               |    12.5 |     12.9 |   15.38 |   12.65 | 7-52,67,91-247                                                        
+ backend/routes                  |   61.56 |        0 |       0 |   61.98 |                                                                       
+  auth.routes.js                 |     100 |      100 |     100 |     100 |                                                                       
+  catalogo.routes.js             |   17.02 |        0 |       0 |   17.77 | 8-30,39-70,79-108                                                     
+  categorias.routes.js           |     100 |      100 |     100 |     100 |                                                                       
+  clientes.routes.js             |     100 |      100 |     100 |     100 |                                                                       
+  dashboard.routes.js            |     100 |      100 |     100 |     100 |                                                                       
+  estados.routes.js              |   54.54 |      100 |       0 |   54.54 | 8-21                                                                  
+  notificaciones.routes.js       |     100 |      100 |     100 |     100 |                                                                       
+  passwordRecovery.routes.js     |     100 |      100 |     100 |     100 |                                                                       
+  pedidos.routes.js              |     100 |      100 |     100 |     100 |                                                                       
+  perfil.routes.js               |   12.65 |        0 |       0 |   12.65 | 12-32,41-85,94-243                                                    
+  productos.routes.js            |     100 |      100 |     100 |     100 |                                                                       
+  reportes.routes.js             |     100 |      100 |     100 |     100 |                                                                       
+  settings.routes.js             |     100 |      100 |     100 |     100 |                                                                       
+  tenants.routes.js              |     100 |      100 |     100 |     100 |                                                                       
+  usuarios.routes.js             |     100 |      100 |     100 |     100 |                                                                       
+ backend/services                |   11.32 |    20.83 |       0 |   11.32 |                                                                       
+  email.service.js               |   11.32 |    20.83 |       0 |   11.32 | 20-23,29-318                                                          
+ backend/validators              |     100 |      100 |     100 |     100 |                                                                       
+  categoria.validator.js         |     100 |      100 |     100 |     100 |                                                                       
+  producto.validator.js          |     100 |      100 |     100 |     100 |                                                                       
+  usuario.validator.js           |     100 |      100 |     100 |     100 |                                                                       
+---------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------
