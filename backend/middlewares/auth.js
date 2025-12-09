@@ -11,10 +11,10 @@ const authenticateToken = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // Verificar que el usuario aún existe y está activo
         const [rows] = await db.execute(
-            `SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.id_rol, r.nombre_rol 
+            `SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.id_rol, u.id_tenant, r.nombre_rol 
              FROM usuarios u 
              JOIN roles r ON u.id_rol = r.id_rol 
              WHERE u.id_usuario = ? AND u.activo = TRUE`,
@@ -30,8 +30,8 @@ const authenticateToken = async (req, res, next) => {
             userId: rows[0].id_usuario,
             role: rows[0].id_rol,  // Agregar alias para compatibilidad
             rol: rows[0].nombre_rol,  // Agregar nombre del rol
-            tenant_id: decoded.tenant_id,  // Pasar tenant_id del JWT
-            tenant_slug: decoded.tenant_slug  // Pasar tenant_slug del JWT
+            tenant_id: rows[0].id_tenant,  // Obtener tenant_id de la BD (SIEMPRE disponible)
+            tenant_slug: decoded.tenant_slug  // Pasar tenant_slug del JWT si existe
         };
         next();
     } catch (error) {

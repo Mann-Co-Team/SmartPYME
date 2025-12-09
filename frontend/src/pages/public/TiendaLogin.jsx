@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { login } from '../../services/auth';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useTheme } from '../../context/ThemeContext';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import DarkModeToggle from '../../components/DarkModeToggle';
 
 export default function TiendaLogin() {
+  const { t } = useTranslation();
   const { tenant_slug } = useParams();
   const navigate = useNavigate();
   const { darkMode } = useTheme();
@@ -95,11 +99,17 @@ export default function TiendaLogin() {
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'} flex items-center justify-center py-12 px-4`}>
       <div className="max-w-md w-full space-y-8">
+        {/* Switchers */}
+        <div className="flex justify-end gap-2 mb-4">
+          <LanguageSwitcher />
+          <DarkModeToggle />
+        </div>
+
         <div className="text-center">
           <h2 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
             {tenant?.nombre_empresa}
           </h2>
-          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Iniciar Sesión como Cliente</p>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('auth.loginSubtitle')}</p>
         </div>
 
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-8`}>
@@ -112,7 +122,7 @@ export default function TiendaLogin() {
 
             <div>
               <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Correo Electrónico
+                {t('auth.email')}
               </label>
               <input
                 type="email"
@@ -128,7 +138,7 @@ export default function TiendaLogin() {
 
             <div>
               <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Contraseña
+                {t('auth.password')}
               </label>
               <input
                 type="password"
@@ -147,25 +157,25 @@ export default function TiendaLogin() {
               disabled={submitting}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {submitting ? t('auth.loggingIn') : t('auth.loginButton')}
             </button>
           </form>
 
           <div className="mt-6 text-center space-y-2">
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              ¿No tienes cuenta?{' '}
+              {t('auth.noAccount')}{' '}
               <Link
                 to={`/tienda/${tenant_slug}/registro`}
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                Regístrate aquí
+                {t('auth.registerHere')}
               </Link>
             </p>
             <Link
               to={`/tienda/${tenant_slug}`}
               className={`block text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'}`}
             >
-              ← Volver a la tienda
+              ← {t('auth.backToStore')}
             </Link>
           </div>
         </div>

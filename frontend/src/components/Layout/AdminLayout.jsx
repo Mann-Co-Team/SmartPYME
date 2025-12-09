@@ -12,7 +12,9 @@ import {
   UserCircleIcon,
   UsersIcon,
   BellIcon,
-  BuildingStorefrontIcon
+  BuildingStorefrontIcon,
+  ClipboardDocumentListIcon,
+  CircleStackIcon
 } from '@heroicons/react/24/outline';
 import NotificationPanel from '../NotificationPanel';
 import DarkModeToggle from '../DarkModeToggle';
@@ -98,6 +100,8 @@ export default function AdminLayout() {
   const adminOnlyNavigation = [
     { name: 'Reportes', href: `/${tenant_slug}/admin/reportes`, icon: ChartBarIcon, roles: [1] },
     { name: 'Usuarios', href: `/${tenant_slug}/admin/usuarios`, icon: UsersIcon, roles: [1] },
+    { name: 'Auditoría', href: `/${tenant_slug}/admin/auditoria`, icon: ClipboardDocumentListIcon, roles: [1] },
+    { name: 'Backups', href: `/${tenant_slug}/admin/backups`, icon: CircleStackIcon, roles: [1] },
     { name: 'Configuración', href: `/${tenant_slug}/admin/settings`, icon: Cog6ToothIcon, roles: [1] },
   ];
 
@@ -178,8 +182,8 @@ export default function AdminLayout() {
             to={`/tienda/${tenant_slug}`}
             target="_blank"
             className={`flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group ${darkMode
-                ? 'text-gray-300 hover:bg-gray-700 hover:text-green-400'
-                : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+              ? 'text-gray-300 hover:bg-gray-700 hover:text-green-400'
+              : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
               }`}
           >
             <BuildingStorefrontIcon className={`h-5 w-5 ${darkMode ? 'text-gray-400 group-hover:text-green-400' : 'text-gray-400 group-hover:text-green-600'}`} />

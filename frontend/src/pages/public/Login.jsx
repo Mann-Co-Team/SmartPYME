@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import DarkModeToggleStandalone from '../../components/DarkModeToggleStandalone';
+import LanguageCurrencySwitcher from '../../components/LanguageCurrencySwitcher';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const Login = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -26,7 +30,7 @@ const Login = () => {
 
     // Validaciones
     if (!formData.email || !formData.password) {
-      toast.error('Por favor completa todos los campos');
+      toast.error(t('auth.fillAllFields'));
       return;
     }
 
@@ -42,8 +46,8 @@ const Login = () => {
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
 
-      toast.success('¡Bienvenido!');
-      
+      toast.success(t('auth.welcome'));
+
       // Redirigir según el rol
       if (response.data.data.user.id_rol === 1 || response.data.data.user.id_rol === 2) {
         // Admin o Staff
@@ -56,11 +60,11 @@ const Login = () => {
     } catch (error) {
       console.error('Error en login:', error);
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
-        toast.error('Error de conexión. Intente nuevamente más tarde');
+        toast.error(t('auth.connectionError'));
       } else if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Error al iniciar sesión. Por favor intenta nuevamente');
+        toast.error(t('auth.loginError'));
       }
     } finally {
       setLoading(false);
@@ -68,18 +72,24 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-md w-full space-y-8">
+        {/* Switchers */}
+        <div className="flex justify-end gap-2 mb-4">
+          <LanguageCurrencySwitcher />
+          <DarkModeToggleStandalone />
+        </div>
+
         {/* Logo y título */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-2xl">SP</span>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Iniciar Sesión
+          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+            {t('auth.loginTitle')}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Accede a tu cuenta de SmartPYME
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {t('auth.loginSubtitle')}
           </p>
         </div>
 
@@ -88,8 +98,8 @@ const Login = () => {
           <div className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -103,15 +113,15 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="tu@email.com"
+                  placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -133,14 +143,14 @@ const Login = () => {
 
           {/* Link de recuperación de contraseña */}
           <div className="text-center">
-            <Link 
-              to="/olvide-password" 
+            <Link
+              to="/olvide-password"
               className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 hover:underline"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
               </svg>
-              ¿Olvidaste tu contraseña?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
 
@@ -157,10 +167,10 @@ const Login = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Iniciando sesión...
+                  {t('auth.loggingIn')}
                 </span>
               ) : (
-                'Iniciar Sesión'
+                t('auth.loginButton')
               )}
             </button>
           </div>
@@ -168,19 +178,19 @@ const Login = () => {
           {/* Links */}
           <div className="flex flex-col space-y-2 text-center text-sm">
             <div>
-              <span className="text-gray-600">¿No tienes una cuenta? </span>
+              <span className="text-gray-600 dark:text-gray-400">{t('auth.noAccount')} </span>
               <Link to="/registro" className="font-medium text-blue-600 hover:text-blue-700">
-                Regístrate aquí
+                {t('auth.registerHere')}
               </Link>
             </div>
             <div>
-              <Link to="/" className="font-medium text-gray-600 hover:text-gray-700">
-                Volver al inicio
+              <Link to="/" className="font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700">
+                {t('auth.backToHome')}
               </Link>
             </div>
             <div className="pt-4 border-t border-gray-200">
-              <Link to="/admin/login" className="font-medium text-gray-800 hover:text-gray-900">
-                ¿Eres administrador? Ingresa aquí
+              <Link to="/admin/login" className="font-medium text-gray-800 dark:text-gray-200 hover:text-gray-900">
+                {t('auth.adminLogin')}
               </Link>
             </div>
           </div>

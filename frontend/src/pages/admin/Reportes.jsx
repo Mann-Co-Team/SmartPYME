@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { formatPriceWithConversion } from '../../utils/currencyConverter';
 import api from '../../services/api';
 
 const Reportes = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [exportando, setExportando] = useState(false);
     const [reporte, setReporte] = useState(null);
     const [error, setError] = useState('');
+    const [userCurrency, setUserCurrency] = useState(localStorage.getItem('currency') || 'CLP');
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -51,6 +55,15 @@ const Reportes = () => {
             fechaInicio: primerDia.toISOString().split('T')[0],
             fechaFin: ultimoDia.toISOString().split('T')[0]
         }));
+
+        // Escuchar cambios de moneda
+        const handleCurrencyChange = () => {
+            const newCurrency = localStorage.getItem('currency') || 'CLP';
+            setUserCurrency(newCurrency);
+        };
+
+        window.addEventListener('currencyChanged', handleCurrencyChange);
+        return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
     }, [searchParams]);
 
     // Actualizar fechas según tipo de período
@@ -173,7 +186,7 @@ const Reportes = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Reportes de Ventas</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.reports.title')}</h1>
                     <p className="text-gray-600 dark:text-gray-400 mt-1">
                         Análisis y exportación de datos de ventas
                     </p>
@@ -183,18 +196,17 @@ const Reportes = () => {
             {/* Filtros */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Filtros</h2>
-                
+
                 {/* Tipo de Período */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                     {['dia', 'semana', 'mes', 'anio', 'personalizado'].map((tipo) => (
                         <button
                             key={tipo}
                             onClick={() => handleTipoPeriodoChange(tipo)}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                                filtros.tipoPeriodo === tipo
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                            }`}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filtros.tipoPeriodo === tipo
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                }`}
                         >
                             {tipo === 'anio' ? 'Año' : tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                         </button>
@@ -298,7 +310,7 @@ const Reportes = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                             <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Ventas</h3>
                             <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                                {formatCurrency(reporte.metricas.total_ventas)}
+                                {formatPriceWithConversion(reporte.metricas.total_ventas, userCurrency)}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {reporte.metricas.total_pedidos || 0} pedidos

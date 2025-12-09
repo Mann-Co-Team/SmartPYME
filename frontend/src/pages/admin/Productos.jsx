@@ -4,8 +4,10 @@ import { getProductos, createProducto, updateProducto, deleteProducto } from '..
 import { getCategorias } from '../../services/categorias';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { usePermissions } from '../../utils/permissions';
+import { useTranslation } from 'react-i18next';
 
 export default function AdminProductos() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -529,8 +531,8 @@ export default function AdminProductos() {
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'grid'
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     title="Vista de cuadrícula"
                   >
@@ -542,8 +544,8 @@ export default function AdminProductos() {
                   <button
                     onClick={() => setViewMode('list')}
                     className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'list'
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     title="Vista de lista"
                   >
@@ -582,8 +584,8 @@ export default function AdminProductos() {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'grid'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   title="Vista de cuadrícula"
                 >
@@ -595,8 +597,8 @@ export default function AdminProductos() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${viewMode === 'list'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   title="Vista de lista"
                 >
@@ -644,8 +646,8 @@ export default function AdminProductos() {
                     key={producto.id_producto}
                     ref={highlightedProductId === producto.id_producto ? highlightRef : null}
                     className={`transition-colors duration-500 ${highlightedProductId === producto.id_producto
-                        ? 'bg-yellow-100 animate-pulse'
-                        : ''
+                      ? 'bg-yellow-100 animate-pulse'
+                      : ''
                       }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -682,8 +684,8 @@ export default function AdminProductos() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(producto.activo === 1 || producto.activo === true)
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
                         }`}>
                         {(producto.activo === 1 || producto.activo === true) ? 'Activo' : 'Inactivo'}
                       </span>
@@ -720,8 +722,8 @@ export default function AdminProductos() {
               key={producto.id_producto}
               ref={highlightedProductId === producto.id_producto ? highlightRef : null}
               className={`card overflow-hidden hover:shadow-xl transition-all group ${highlightedProductId === producto.id_producto
-                  ? 'ring-4 ring-yellow-400 animate-pulse'
-                  : ''
+                ? 'ring-4 ring-yellow-400 animate-pulse'
+                : ''
                 }`}
             >
               {/* Imagen del producto */}
@@ -734,8 +736,8 @@ export default function AdminProductos() {
                 {/* Badge de estado */}
                 <div className="absolute top-2 right-2">
                   <span className={`px-3 py-1 text-xs font-semibold rounded-full ${(producto.activo === 1 || producto.activo === true)
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-red-500 text-white'
                     }`}>
                     {(producto.activo === 1 || producto.activo === true) ? '✓ Activo' : '✗ Inactivo'}
                   </span>

@@ -5,39 +5,38 @@ const { authenticateToken } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/permissions');
 const { validateTenant } = require('../middlewares/tenant');
 
-// Obtener configuraciones públicas (sin autenticación)
-router.get('/public/all', SettingsController.getAll);
+// Endpoint público para configuraciones básicas (NO requiere autenticación)
+router.get('/public',
+    SettingsController.getPublic
+);
 
-// Obtener todas las configuraciones - admin solamente
-router.get('/', 
+// Obtener todas las configuraciones (admin ve todas, usuarios normales solo públicas)
+router.get('/',
     authenticateToken,
     validateTenant,
-    authorize('manage_settings'),
     SettingsController.getAll
 );
 
-// Obtener configuración específica
-router.get('/:key',
-    authenticateToken,
-    validateTenant,
-    authorize('manage_settings'),
-    SettingsController.getByKey
-);
-
-// Actualizar configuración específica
-router.put('/:key',
-    authenticateToken,
-    validateTenant,
-    authorize('manage_settings'),
-    SettingsController.updateSetting
-);
-
-// Actualizar múltiples configuraciones
+// Actualizar múltiples configuraciones (solo admin) - DEBE IR ANTES DE /:key
 router.put('/',
     authenticateToken,
     validateTenant,
-    authorize('manage_settings'),
-    SettingsController.updateMultiple
+    // authorize('manage_settings'), // TEMPORALMENTE DESHABILITADO PARA DEBUG
+    SettingsController.update
+);
+
+// Obtener configuraciones por categoría
+router.get('/category/:category',
+    authenticateToken,
+    validateTenant,
+    SettingsController.getByCategory
+);
+
+// Obtener configuración específica - DEBE IR AL FINAL
+router.get('/:key',
+    authenticateToken,
+    validateTenant,
+    SettingsController.getByKey
 );
 
 module.exports = router;

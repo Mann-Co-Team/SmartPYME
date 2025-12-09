@@ -15,6 +15,9 @@ const server = app.listen(PORT, HOST, () => {
     console.log(`🔗 URL: http://localhost:${PORT}`);
     console.log(`✅ Escuchando en: ${address.address}:${address.port}`);
     console.log(`📍 Family: ${address.family}`);
+
+    // Iniciar scheduler de backups automáticos
+    require('./scripts/scheduler');
 });
 
 server.on('error', (error) => {

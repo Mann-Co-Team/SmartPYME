@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
+import { getSettings, updateSettings } from '../../services/settings';
 
 export default function AdminSettings() {
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tenantInfo, setTenantInfo] = useState(null);
@@ -18,8 +21,24 @@ export default function AdminSettings() {
     facebook: '',
   });
 
+  // Estado para configuraciones avanzadas
+  const [systemSettings, setSystemSettings] = useState({
+    currency: 'CLP',
+    language: 'es',
+    timezone: 'America/Santiago',
+    tax_rate: '19',
+    notification_email: '',
+    email_template_order: { subject: '', body: '' },
+    pdf_template_invoice: { header: '', footer: '', show_logo: true }
+  });
+  const [settingsChanged, setSettingsChanged] = useState(false);
+
   useEffect(() => {
     cargarConfiguracion();
+    // Cargar configuraciones avanzadas sin romper el componente si falla
+    cargarConfiguracionesAvanzadas().catch(err => {
+      console.error('Error inicial cargando configuraciones avanzadas:', err);
+    });
   }, []);
 
   const cargarConfiguracion = async () => {
@@ -64,7 +83,7 @@ export default function AdminSettings() {
 
     try {
       await api.put(`/tenants/${tenantInfo.id}`, formData);
-      
+
       // Actualizar localStorage
       const updatedTenant = {
         ...tenantInfo,
@@ -77,6 +96,97 @@ export default function AdminSettings() {
     } catch (error) {
       console.error('Error al guardar configuración:', error);
       toast.error(error.response?.data?.message || 'Error al guardar configuración');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cargarConfiguracionesAvanzadas = async () => {
+    try {
+      const response = await getSettings();
+      if (response.success) {
+        const settingsData = {
+          currency: 'CLP',
+          language: 'es',
+          timezone: 'America/Santiago',
+          tax_rate: '19',
+          notification_email: '',
+          email_template_order: { subject: '', body: '' },
+          pdf_template_invoice: { header: '', footer: '', show_logo: true }
+        };
+
+        Object.keys(response.data).forEach(key => {
+          const setting = response.data[key];
+          let value = setting.value;
+
+          // Parsear JSON si es necesario
+          if (setting.type === 'json') {
+            if (typeof value === 'string') {
+              try {
+                value = JSON.parse(value);
+              } catch (e) {
+                console.warn(`Error parsing JSON for ${key}:`, e);
+                value = settingsData[key]; // usar default
+              }
+            }
+            // Si ya es un objeto, usarlo directamente
+          }
+
+          settingsData[key] = value;
+        });
+
+        console.log('✅ Settings cargadas:', settingsData);
+        setSystemSettings(settingsData);
+      }
+    } catch (error) {
+      console.error('Error cargando configuraciones avanzadas:', error);
+      // Mantener valores por defecto si falla
+    }
+  };
+
+  const handleSystemSettingChange = (key, value) => {
+    setSystemSettings(prev => ({ ...prev, [key]: value }));
+    setSettingsChanged(true);
+  };
+
+  const handleTemplateChange = (template, field, value) => {
+    setSystemSettings(prev => ({
+      ...prev,
+      [template]: { ...prev[template], [field]: value }
+    }));
+    setSettingsChanged(true);
+  };
+
+  const handleSaveSystemSettings = async () => {
+    try {
+      setSaving(true);
+      const response = await updateSettings(systemSettings);
+      if (response.success) {
+        toast.success('Configuraciones avanzadas actualizadas');
+        setSettingsChanged(false);
+
+        // Cambiar idioma de la aplicación si se modificó
+        if (systemSettings.language && systemSettings.language !== i18n.language) {
+          i18n.changeLanguage(systemSettings.language);
+          localStorage.setItem('language', systemSettings.language);
+          toast.success(`Idioma cambiado a ${systemSettings.language === 'es' ? 'Español' : 'English'}`);
+        }
+
+        // Guardar moneda en localStorage y disparar evento
+        if (systemSettings.currency) {
+          localStorage.setItem('currency', systemSettings.currency);
+          window.dispatchEvent(new Event('currencyChanged'));
+          console.log('✅ Moneda guardada:', systemSettings.currency);
+        }
+
+        // Recargar configuraciones en el contexto global
+        if (window.refreshGlobalSettings) {
+          window.refreshGlobalSettings();
+        }
+      }
+    } catch (error) {
+      console.error('Error guardando configuraciones:', error);
+      toast.error(error.response?.data?.message || 'Error guardando configuraciones');
     } finally {
       setSaving(false);
     }
@@ -152,16 +262,17 @@ export default function AdminSettings() {
     { id: 'general', name: 'General', icon: '🏢' },
     { id: 'social', name: 'Redes Sociales', icon: '📱', requiredPlan: 'profesional' },
     { id: 'branding', name: 'Marca', icon: '🎨', requiredPlan: 'empresarial' },
+    { id: 'advanced', name: 'Avanzado', icon: '⚙️' },
     { id: 'plan', name: 'Mi Plan', icon: '⚡' }
   ];
 
   const canAccessTab = (tab) => {
     if (!tab.requiredPlan) return true;
-    
+
     const planHierarchy = { basico: 0, profesional: 1, empresarial: 2 };
     const currentPlanLevel = planHierarchy[tenantInfo?.plan] || 0;
     const requiredPlanLevel = planHierarchy[tab.requiredPlan] || 0;
-    
+
     return currentPlanLevel >= requiredPlanLevel;
   };
 
@@ -185,11 +296,10 @@ export default function AdminSettings() {
 
       {/* Plan Banner */}
       {tenantInfo && (
-        <div className={`relative overflow-hidden rounded-xl p-6 mb-8 border-2 ${
-          tenantInfo.plan === 'empresarial' ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300' :
+        <div className={`relative overflow-hidden rounded-xl p-6 mb-8 border-2 ${tenantInfo.plan === 'empresarial' ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300' :
           tenantInfo.plan === 'profesional' ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300' :
-          'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300'
-        }`}>
+            'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300'
+          }`}>
           <div className="flex justify-between items-start relative z-10">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
@@ -261,13 +371,12 @@ export default function AdminSettings() {
                 key={tab.id}
                 onClick={() => hasAccess && setActiveTab(tab.id)}
                 disabled={!hasAccess}
-                className={`relative flex items-center gap-2 px-6 py-4 font-semibold whitespace-nowrap transition-all ${
-                  activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : hasAccess
+                className={`relative flex items-center gap-2 px-6 py-4 font-semibold whitespace-nowrap transition-all ${activeTab === tab.id
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : hasAccess
                     ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     : 'text-gray-400 cursor-not-allowed opacity-50'
-                }`}
+                  }`}
               >
                 <span className="text-xl">{tab.icon}</span>
                 <span>{tab.name}</span>
@@ -285,7 +394,7 @@ export default function AdminSettings() {
       {/* Tab Content */}
       <form onSubmit={handleSubmit}>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          
+
           {/* Tab: General */}
           {activeTab === 'general' && (
             <div className="space-y-6">
@@ -369,11 +478,10 @@ export default function AdminSettings() {
                   onChange={handleInputChange}
                   rows="4"
                   disabled={!canAccessFeature('Descripción de empresa')}
-                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                    !canAccessFeature('Descripción de empresa') ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''
-                  }`}
-                  placeholder={canAccessFeature('Descripción de empresa') 
-                    ? "Describe tu negocio, productos o servicios..." 
+                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${!canAccessFeature('Descripción de empresa') ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''
+                    }`}
+                  placeholder={canAccessFeature('Descripción de empresa')
+                    ? "Describe tu negocio, productos o servicios..."
                     : "Mejora a plan Profesional para usar esta función"}
                 />
                 {!canAccessFeature('Descripción de empresa') && (
@@ -543,6 +651,203 @@ export default function AdminSettings() {
             </div>
           )}
 
+          {/* Tab: Avanzado */}
+          {activeTab === 'advanced' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">⚙️ Configuraciones Avanzadas</h3>
+                <p className="text-sm text-gray-600 mb-6">Configuraciones globales del sistema</p>
+              </div>
+
+              {settingsChanged && (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center justify-between">
+                  <span className="text-yellow-800">Tienes cambios sin guardar</span>
+                  <button
+                    type="button"
+                    onClick={cargarConfiguracionesAvanzadas}
+                    className="text-yellow-600 hover:text-yellow-800 font-medium"
+                  >
+                    Descartar cambios
+                  </button>
+                </div>
+              )}
+
+              {/* Configuración Regional */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="font-bold text-gray-900 mb-4">🌍 Configuración Regional</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Moneda</label>
+                    <select
+                      value={systemSettings.currency || 'CLP'}
+                      onChange={(e) => handleSystemSettingChange('currency', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="CLP">Peso Chileno (CLP)</option>
+                      <option value="USD">Dólar (USD)</option>
+                      <option value="EUR">Euro (EUR)</option>
+                      <option value="ARS">Peso Argentino (ARS)</option>
+                      <option value="BRL">Real Brasileño (BRL)</option>
+                      <option value="MXN">Peso Mexicano (MXN)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Idioma</label>
+                    <select
+                      value={systemSettings.language || 'es'}
+                      onChange={(e) => handleSystemSettingChange('language', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="es">Español</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Zona Horaria</label>
+                    <select
+                      value={systemSettings.timezone || 'America/Santiago'}
+                      onChange={(e) => handleSystemSettingChange('timezone', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="America/Santiago">Santiago (GMT-3)</option>
+                      <option value="America/Argentina/Buenos_Aires">Buenos Aires (GMT-3)</option>
+                      <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
+                      <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
+                      <option value="America/New_York">Nueva York (GMT-5)</option>
+                      <option value="Europe/Madrid">Madrid (GMT+1)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tasa de Impuesto (IVA %)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={systemSettings.tax_rate || '19'}
+                      onChange={(e) => handleSystemSettingChange('tax_rate', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Notificaciones */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="font-bold text-gray-900 mb-4">📧 Notificaciones</h4>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email de Notificaciones del Sistema</label>
+                  <input
+                    type="email"
+                    value={systemSettings.notification_email || ''}
+                    onChange={(e) => handleSystemSettingChange('notification_email', e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="notificaciones@empresa.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Email donde se recibirán notificaciones del sistema (backups, errores, etc.)</p>
+                </div>
+              </div>
+
+              {/* Plantillas de Email */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="font-bold text-gray-900 mb-4">📨 Plantillas de Email</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Asunto - Pedidos</label>
+                    <input
+                      type="text"
+                      value={(systemSettings.email_template_order && systemSettings.email_template_order.subject) || ''}
+                      onChange={(e) => handleTemplateChange('email_template_order', 'subject', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Nuevo Pedido #{{order_id}}"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Cuerpo - Pedidos</label>
+                    <textarea
+                      rows="4"
+                      value={(systemSettings.email_template_order && systemSettings.email_template_order.body) || ''}
+                      onChange={(e) => handleTemplateChange('email_template_order', 'body', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                      placeholder="Estimado {{customer_name}},&#10;&#10;Su pedido #{{order_id}} ha sido recibido."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Variables: {'{{'} order_id {'}}'}, {'{{'} customer_name {'}}'}, {'{{'} total {'}}'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Plantillas de PDF */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="font-bold text-gray-900 mb-4">📄 Plantillas de PDF</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Encabezado - Facturas</label>
+                    <input
+                      type="text"
+                      value={(systemSettings.pdf_template_invoice && systemSettings.pdf_template_invoice.header) || ''}
+                      onChange={(e) => handleTemplateChange('pdf_template_invoice', 'header', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="{{company_name}}"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Pie de página - Facturas</label>
+                    <input
+                      type="text"
+                      value={(systemSettings.pdf_template_invoice && systemSettings.pdf_template_invoice.footer) || ''}
+                      onChange={(e) => handleTemplateChange('pdf_template_invoice', 'footer', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Gracias por su compra"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="show_logo"
+                      checked={(systemSettings.pdf_template_invoice && systemSettings.pdf_template_invoice.show_logo) || false}
+                      onChange={(e) => handleTemplateChange('pdf_template_invoice', 'show_logo', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="show_logo" className="ml-2 block text-sm text-gray-700">Mostrar logo en PDF</label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón Guardar */}
+              <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
+                <button
+                  type="button"
+                  onClick={cargarConfiguracionesAvanzadas}
+                  disabled={!settingsChanged || saving}
+                  className="px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ↺ Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSystemSettings}
+                  disabled={!settingsChanged || saving}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <span className="inline-block animate-spin">⏳</span>
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <span>💾</span>
+                      Guardar Cambios
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Tab: Mi Plan */}
           {activeTab === 'plan' && (
             <div className="space-y-6">
@@ -551,11 +856,10 @@ export default function AdminSettings() {
                 <p className="text-sm text-gray-600 mb-6">Detalles de tu plan actual y características disponibles</p>
               </div>
 
-              <div className={`rounded-xl p-6 border-2 ${
-                tenantInfo.plan === 'empresarial' ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300' :
+              <div className={`rounded-xl p-6 border-2 ${tenantInfo.plan === 'empresarial' ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300' :
                 tenantInfo.plan === 'profesional' ? 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300' :
-                'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300'
-              }`}>
+                  'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300'
+                }`}>
                 <div className="flex items-center gap-4 mb-6">
                   <span className="text-6xl">{planFeatures.icon}</span>
                   <div>
@@ -593,19 +897,17 @@ export default function AdminSettings() {
                   {planFeatures.features.map((feature, index) => (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-4 rounded-lg border-2 ${
-                        feature.available
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
+                      className={`flex items-center justify-between p-4 rounded-lg border-2 ${feature.available
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-gray-50 border-gray-200'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">
                           {feature.available ? '✅' : '🔒'}
                         </span>
-                        <span className={`font-semibold ${
-                          feature.available ? 'text-gray-900' : 'text-gray-500'
-                        }`}>
+                        <span className={`font-semibold ${feature.available ? 'text-gray-900' : 'text-gray-500'
+                          }`}>
                           {feature.name}
                         </span>
                       </div>

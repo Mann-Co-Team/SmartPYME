@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { login, isAuthenticated } from '../../services/auth';
 import toast from 'react-hot-toast';
 import { LockClosedIcon, EnvelopeIcon, ArrowLeftIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import api from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import DarkModeToggle from '../../components/DarkModeToggle';
 
 export default function AdminLogin() {
+  const { t } = useTranslation();
   const { tenant_slug } = useParams(); // Obtener tenant_slug de la URL
   const { darkMode } = useTheme(); // Obtener estado del modo oscuro
   const [formData, setFormData] = useState({
@@ -114,16 +118,22 @@ export default function AdminLogin() {
       </div>
 
       <div className="max-w-md w-full space-y-8 relative">
+        {/* Switchers */}
+        <div className="flex justify-end gap-2">
+          <LanguageSwitcher />
+          <DarkModeToggle />
+        </div>
+
         {/* Logo/Icon */}
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+        <Link to={tenant_slug ? `/tienda/${tenant_slug}` : '/'} className="flex justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform cursor-pointer">
             {tenantInfo ? (
               <BuildingStorefrontIcon className="h-8 w-8 text-white" />
             ) : (
               <LockClosedIcon className="h-8 w-8 text-white" />
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Header */}
         <div className="text-center">
@@ -134,10 +144,10 @@ export default function AdminLogin() {
             {tenantInfo ? (
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                Panel de Administración • Plan {tenantInfo.plan}
+                {t('common.adminPanel')} • {t('common.plan')} {tenantInfo.plan}
               </span>
             ) : (
-              'Ingresa el identificador de tu empresa'
+              t('auth.enterCompanyId')
             )}
           </p>
         </div>      {/* Form Card */}
@@ -146,7 +156,7 @@ export default function AdminLogin() {
             {/* Tenant Slug Input - Ahora primero */}
             <div>
               <label htmlFor="tenant_slug" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Identificador de Empresa
+                {t('auth.companyId')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -216,7 +226,7 @@ export default function AdminLogin() {
             {/* Email Input */}
             <div>
               <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Correo Electrónico del Administrador
+                {t('auth.adminEmail')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -238,7 +248,7 @@ export default function AdminLogin() {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                Contraseña
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -266,7 +276,7 @@ export default function AdminLogin() {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                 </svg>
-                ¿Olvidaste tu contraseña?
+                {t('auth.forgotPassword')}
               </Link>
             </div>
 
@@ -282,12 +292,12 @@ export default function AdminLogin() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Iniciando sesión...
+                  {t('auth.loggingIn')}
                 </>
               ) : (
                 <>
                   <LockClosedIcon className="h-5 w-5 mr-2" />
-                  Iniciar Sesión
+                  {t('auth.loginButton')}
                 </>
               )}
             </button>
@@ -300,14 +310,14 @@ export default function AdminLogin() {
                 to="/login"
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
-                ¿Eres usuario? Inicia sesión aquí
+                {t('auth.userLogin')}
               </Link>
               <Link
                 to={tenant_slug ? `/tienda/${tenant_slug}` : '/'}
                 className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'} font-medium transition-colors inline-flex items-center justify-center`}
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-1" />
-                Volver al inicio
+                {t('auth.backToHome')}
               </Link>
             </div>
           </div>
@@ -315,7 +325,7 @@ export default function AdminLogin() {
 
         {/* Help text */}
         <p className={`text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          ¿Necesitas ayuda? Contacta al administrador del sistema
+          {t('auth.needHelp')}
         </p>
       </div>
     </div>

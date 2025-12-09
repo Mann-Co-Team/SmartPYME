@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { getCategorias, createCategoria, updateCategoria, deleteCategoria, toggleCategoriaActive } from '../../services/categorias';
 import ImageUpload from '../../components/ImageUpload';
 
 export default function AdminCategorias() {
+  const { t } = useTranslation();
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaToDelete, setCategoriaToDelete] = useState(null);
   const [editingCategoria, setEditingCategoria] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -26,7 +30,7 @@ export default function AdminCategorias() {
       setCategorias(data);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
-      toast.error('Error al cargar categorías');
+      toast.error(t('admin.categories.errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -92,7 +96,7 @@ export default function AdminCategorias() {
     e.preventDefault();
 
     if (!formData.nombre.trim()) {
-      toast.error('El nombre es requerido');
+      toast.error(t('admin.categories.errorSaving'));
       return;
     }
 
@@ -106,17 +110,17 @@ export default function AdminCategorias() {
 
       if (editingCategoria) {
         await updateCategoria(editingCategoria.id_categoria, formDataToSend);
-        toast.success('Categoría actualizada exitosamente');
+        toast.success(t('admin.categories.updatedSuccess'));
       } else {
         await createCategoria(formDataToSend);
-        toast.success('Categoría creada exitosamente');
+        toast.success(t('admin.categories.createdSuccess'));
       }
 
       handleCloseModal();
       cargarCategorias();
     } catch (error) {
       console.error('Error al guardar categoría:', error);
-      toast.error(error.response?.data?.message || 'Error al guardar categoría');
+      toast.error(error.response?.data?.message || t('admin.categories.errorSaving'));
     }
   };
 
@@ -131,18 +135,25 @@ export default function AdminCategorias() {
     }
   };
 
-  const handleDelete = async (id, nombre) => {
-    if (!window.confirm(`¿Estás seguro de eliminar la categoría "${nombre}"? Esta acción no se puede deshacer.`)) {
-      return;
-    }
+  const handleDeleteClick = (id, nombre) => {
+    setCategoriaToDelete({ id, nombre });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!categoriaToDelete) return;
 
     try {
-      await deleteCategoria(id);
-      toast.success('Categoría eliminada exitosamente');
+      await deleteCategoria(categoriaToDelete.id);
+      toast.success(t('admin.categories.deletedSuccess'));
+      setShowDeleteModal(false);
+      setCategoriaToDelete(null);
       cargarCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      toast.error(error.response?.data?.message || 'Error al eliminar categoría');
+      toast.error(error.response?.data?.message || t('admin.categories.errorDeleting'));
+      setShowDeleteModal(false);
+      setCategoriaToDelete(null);
     }
   };
 
@@ -157,9 +168,9 @@ export default function AdminCategorias() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Categorías</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('admin.categories.title')}</h1>
         <button onClick={() => handleOpenModal()} className="btn-primary">
-          + Agregar Categoría
+          + {t('admin.categories.addCategory')}
         </button>
       </div>
 
@@ -190,19 +201,19 @@ export default function AdminCategorias() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Imagen
+                  {t('admin.categories.image')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
+                  {t('admin.categories.name')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
+                  {t('admin.categories.description')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
+                  {t('admin.common.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
+                  {t('admin.common.actions')}
                 </th>
               </tr>
             </thead>
@@ -240,11 +251,10 @@ export default function AdminCategorias() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => handleToggleActive(categoria.id_categoria)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          categoria.activo
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${categoria.activo
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                          }`}
                       >
                         {categoria.activo ? 'Activa' : 'Inactiva'}
                       </button>
@@ -257,7 +267,7 @@ export default function AdminCategorias() {
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(categoria.id_categoria, categoria.nombre)}
+                        onClick={() => handleDeleteClick(categoria.id_categoria, categoria.nombre)}
                         className="text-red-600 hover:text-red-900"
                       >
                         Eliminar
@@ -336,6 +346,36 @@ export default function AdminCategorias() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4 text-gray-900">Confirmar Eliminación</h3>
+            <p className="text-gray-700 mb-6">
+              ¿Estás seguro de eliminar la categoría "<strong>{categoriaToDelete?.nombre}</strong>"?
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCategoriaToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Eliminar
+              </button>
             </div>
           </div>
         </div>

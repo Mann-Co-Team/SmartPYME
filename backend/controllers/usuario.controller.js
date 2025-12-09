@@ -233,6 +233,11 @@ class UsuarioController {
             const { id } = req.params;
             const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
+            console.log('🗑️ DELETE USUARIO - Debug:');
+            console.log('  ID:', id);
+            console.log('  Tenant ID:', tenantId);
+            console.log('  User ID (logged in):', req.user.userId);
+
             // No permitir eliminar al propio usuario
             if (parseInt(id) === req.user.userId) {
                 return res.status(400).json({
@@ -249,14 +254,30 @@ class UsuarioController {
                 });
             }
 
+            console.log('  Usuario a eliminar:', usuario.nombre, usuario.email);
+
             const deleted = await UsuarioModel.delete(id, tenantId);
+
+            console.log('  ✅ Usuario eliminado exitosamente');
 
             res.json({
                 success: true,
                 message: 'Usuario eliminado exitosamente'
             });
         } catch (error) {
-            console.error('Error eliminando usuario:', error);
+            console.error('❌ Error eliminando usuario:', error);
+            console.error('  Error code:', error.code);
+            console.error('  Error message:', error.message);
+            console.error('  Error SQL:', error.sql);
+
+            // Mensaje más específico para errores de clave foránea
+            if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No se puede eliminar el usuario porque tiene registros asociados (pedidos, auditoría, etc.). Considera desactivarlo en su lugar.'
+                });
+            }
+
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'

@@ -1,4 +1,4 @@
-describe('Admin Management Flow', () => {
+describe('Flujo de Administración', () => {
     const tenantSlug = 'pasteleria-dulce-sabor';
     const adminEmail = 'admin@pasteleria-dulce-sabor.com';
     const adminPassword = 'Admin123!';
@@ -10,7 +10,7 @@ describe('Admin Management Flow', () => {
     const testCategory = 'Categoría Cypress';
 
     beforeEach(() => {
-        // Login before each test to ensure clean state
+        // Iniciar sesión antes de cada prueba para asegurar estado limpio
         cy.visit(`/${tenantSlug}/admin/login`);
         cy.get('input[name="tenant_slug"]').should('have.value', tenantSlug);
         cy.get('input[name="email"]').type(adminEmail);
@@ -19,7 +19,7 @@ describe('Admin Management Flow', () => {
         cy.contains('Dashboard', { timeout: 10000 }).should('be.visible');
     });
 
-    it('should navigate to orders and verify list', () => {
+    it('debería navegar a pedidos y verificar la lista', () => {
         cy.contains('Pedidos').click();
         cy.url().should('include', '/admin/pedidos');
         cy.contains('Gestión de Pedidos').should('be.visible');
@@ -34,32 +34,32 @@ describe('Admin Management Flow', () => {
         });
     });
 
-    it('should manage categories (create)', () => {
+    it('debería gestionar categorías (crear)', () => {
         cy.contains('Categorías').click();
         cy.url().should('include', '/admin/categorias');
         cy.contains('Gestión de Categorías').should('be.visible');
 
-        // Create Category
+        // Crear Categoría
         cy.contains('button', 'Agregar Categoría').click({ force: true });
         cy.contains('Nueva Categoría', { timeout: 10000 }).should('be.visible');
 
         cy.get('input[name="nombre"]').type(testCategory);
         cy.get('textarea[name="descripcion"]').type('Descripción de prueba creada por Cypress');
 
-        // Submit
+        // Enviar
         cy.contains('button', 'Crear Categoría').click({ force: true });
 
-        // Verify creation
+        // Verificar creación
         cy.contains(testCategory).should('be.visible');
     });
 
-    it('should manage products (create/edit)', () => {
+    it('debería gestionar productos (crear/editar)', () => {
         cy.contains('Productos').click();
         cy.url().should('include', '/admin/productos');
         cy.contains('Gestión de Productos').should('be.visible');
 
         cy.get('body').then(($body) => {
-            // Cleanup: Delete existing test product if it exists
+            // Limpieza: Eliminar producto de prueba existente si existe
             if ($body.text().includes(testProduct.name)) {
                 cy.contains(testProduct.name).parents('.card, tr').scrollIntoView().within(() => {
                     cy.get('button[title="Eliminar producto"]').click({ force: true });
@@ -71,8 +71,8 @@ describe('Admin Management Flow', () => {
             }
 
             if ($body.find('button:contains("Agregar Producto")').length > 0) {
-                // Create Product
-                cy.wait(1000); // Wait for UI to settle
+                // Crear Producto
+                cy.wait(1000); // Esperar a que la UI se estabilice
                 cy.contains('button', 'Agregar Producto').click({ force: true });
                 cy.contains('Crear Producto', { timeout: 10000 }).should('be.visible');
 
@@ -81,57 +81,57 @@ describe('Admin Management Flow', () => {
                 cy.get('input[name="precio"]').type(testProduct.price);
                 cy.get('input[name="stock"]').type(testProduct.stock);
 
-                // Select category
+                // Seleccionar categoría
                 cy.get('select[name="id_categoria"]').select(1);
 
-                // Submit
+                // Enviar
                 cy.contains('button', 'Crear').click({ force: true });
 
-                // Verify creation
+                // Verificar creación
                 cy.contains(testProduct.name).scrollIntoView().should('be.visible');
 
-                // Delete Product
+                // Eliminar Producto
                 cy.contains(testProduct.name).parents('.card, tr').scrollIntoView().within(() => {
                     cy.get('button[title="Eliminar producto"]').click({ force: true });
                 });
 
-                // Confirm deletion
+                // Confirmar eliminación
                 cy.contains('Confirmar Eliminación').should('be.visible');
                 cy.get('button').contains('Eliminar').click({ force: true });
 
-                // Verify deletion
+                // Verificar eliminación
                 cy.contains(testProduct.name).should('not.exist');
             } else {
-                // Limit reached handling
+                // Manejo de límite alcanzado
                 cy.contains('Límite Alcanzado').should('be.visible');
                 cy.log('Product limit reached, testing Edit functionality instead');
 
-                // Try to edit the first product
+                // Intentar editar el primer producto
                 cy.get('.card, tr').first().within(() => {
                     cy.contains('button', 'Editar').click({ force: true });
                 });
                 cy.contains('Editar Producto', { timeout: 10000 }).should('be.visible');
-                // Close modal
+                // Cerrar modal
                 cy.get('button').find('svg').first().click({ force: true });
             }
         });
     });
 
-    it('should generate reports', () => {
+    it('debería generar reportes', () => {
         cy.contains('Reportes').click();
         cy.url().should('include', '/admin/reportes');
-        cy.contains('Reportes de Ventas').should('be.visible');
+        cy.contains('Reportes').should('be.visible');
 
-        // Select "Mes" filter
+        // Seleccionar filtro "Mes"
         cy.contains('button', 'Mes').click({ force: true });
 
-        // Generate Report
+        // Generar Reporte
         cy.contains('button', 'Generar Reporte').click({ force: true });
 
-        // Verify report content loads
+        // Verificar que el contenido del reporte carga
         cy.contains('Generando...').should('not.exist');
 
-        // Check for metrics or "No hay ventas" message
+        // Verificar métricas o mensaje "No hay ventas"
         cy.get('body').then(($body) => {
             if ($body.text().includes('Total Ventas')) {
                 cy.contains('Total Ventas').should('be.visible');
@@ -141,31 +141,31 @@ describe('Admin Management Flow', () => {
         });
     });
 
-    it('should manage users (create/edit)', () => {
+    it('debería gestionar usuarios (crear/editar)', () => {
         cy.contains('Usuarios').click();
         cy.url().should('include', '/admin/usuarios');
         cy.contains('Gestión de Usuarios').should('be.visible');
 
         cy.get('body').then(($body) => {
             if ($body.find('button:contains("Nuevo Usuario")').length > 0) {
-                // Open New User Modal
+                // Abrir Modal de Nuevo Usuario
                 cy.contains('button', 'Nuevo Usuario').click({ force: true });
                 cy.contains('Nuevo Usuario', { timeout: 10000 }).should('be.visible');
 
-                // Close modal
+                // Cerrar modal
                 cy.get('button').find('svg').first().click({ force: true }); // XMarkIcon
                 cy.contains('Nuevo Usuario').should('not.exist');
             } else {
-                // Limit reached handling
+                // Manejo de límite alcanzado
                 cy.contains('Límite Alcanzado').should('be.visible');
                 cy.log('User limit reached, testing Edit functionality instead');
 
-                // Try to edit the first user
+                // Intentar editar el primer usuario
                 cy.get('tbody tr').first().within(() => {
                     cy.get('button[title="Editar"]').click({ force: true });
                 });
                 cy.contains('Editar Usuario', { timeout: 10000 }).should('be.visible');
-                // Close modal
+                // Cerrar modal
                 cy.get('button').find('svg').first().click({ force: true });
             }
         });

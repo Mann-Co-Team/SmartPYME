@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { EnvelopeIcon, LockClosedIcon, UserIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import DarkModeToggleStandalone from '../../components/DarkModeToggleStandalone';
+import LanguageCurrencySwitcher from '../../components/LanguageCurrencySwitcher';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const Register = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nombre: '',
@@ -29,12 +33,12 @@ const Register = () => {
 
     // Validaciones
     if (!formData.nombre || !formData.email || !formData.password) {
-      toast.error('Por favor completa todos los campos obligatorios');
+      toast.error(t('auth.fillAllFields'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error(t('auth.passwordsDontMatch'));
       return;
     }
 
@@ -53,18 +57,18 @@ const Register = () => {
         telefono: formData.telefono || null
       });
 
-      toast.success('¡Registro exitoso! Bienvenido a SmartPYME');
+      toast.success(t('auth.registerSuccess'));
       setTimeout(() => {
         navigate('/');
       }, 2000);
     } catch (error) {
       console.error('Error en registro:', error);
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
-        toast.error('Error de conexión. Intente nuevamente más tarde');
+        toast.error(t('auth.connectionError'));
       } else if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Error al registrar usuario. Por favor intenta nuevamente');
+        toast.error(t('auth.registerError'));
       }
     } finally {
       setLoading(false);
@@ -72,18 +76,24 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-md w-full space-y-8">
+        {/* Switchers */}
+        <div className="flex justify-end gap-2 mb-4">
+          <LanguageCurrencySwitcher />
+          <DarkModeToggleStandalone />
+        </div>
+
         {/* Logo y título */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-2xl">SP</span>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Crear una cuenta
+          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+            {t('auth.registerTitle')}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Únete a SmartPYME y empieza a gestionar tu negocio
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {t('auth.registerSubtitle')}
           </p>
         </div>
 
@@ -92,8 +102,8 @@ const Register = () => {
           <div className="space-y-4">
             {/* Nombre */}
             <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre completo *
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.name')} *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -107,15 +117,15 @@ const Register = () => {
                   value={formData.nombre}
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Juan Pérez"
+                  placeholder={t('auth.namePlaceholder')}
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.email')} *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -129,7 +139,7 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="tu@email.com"
+                  placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
             </div>
@@ -157,8 +167,8 @@ const Register = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña *
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.password')} *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -180,8 +190,8 @@ const Register = () => {
 
             {/* Confirmar Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmar contraseña *
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('auth.confirmPassword')} *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -214,19 +224,19 @@ const Register = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creando cuenta...
+                  {t('auth.registering')}
                 </span>
               ) : (
-                'Crear cuenta'
+                t('auth.registerButton')
               )}
             </button>
           </div>
 
           {/* Link a login */}
           <div className="text-center text-sm">
-            <span className="text-gray-600">¿Ya tienes una cuenta? </span>
+            <span className="text-gray-600 dark:text-gray-400">{t('auth.hasAccount')} </span>
             <Link to="/" className="font-medium text-blue-600 hover:text-blue-700">
-              Ir al inicio
+              {t('auth.loginHere')}
             </Link>
           </div>
         </form>

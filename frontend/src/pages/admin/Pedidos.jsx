@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { formatPriceWithConversion } from '../../utils/currencyConverter';
 
 // RF-7: Transiciones válidas de estados (deben coincidir con el backend)
 const TRANSICIONES_VALIDAS = {
@@ -16,6 +18,7 @@ const TRANSICIONES_VALIDAS = {
 const ESTADOS_ACTIVOS = [1, 2, 3, 4, 5];
 
 export default function AdminPedidos() {
+  const { t } = useTranslation();
   const [pedidos, setPedidos] = useState([]);
   const [estados, setEstados] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,9 +31,19 @@ export default function AdminPedidos() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { tenant_slug } = useParams();
+  const [userCurrency, setUserCurrency] = useState(localStorage.getItem('currency') || 'CLP');
 
   useEffect(() => {
     cargarDatos();
+
+    // Escuchar cambios de moneda
+    const handleCurrencyChange = () => {
+      const newCurrency = localStorage.getItem('currency') || 'CLP';
+      setUserCurrency(newCurrency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
   }, []);
 
   useEffect(() => {
@@ -196,7 +209,7 @@ export default function AdminPedidos() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('admin.orders.title')}</h1>
           {filtroEstado === 'activos' && (
             <p className="text-sm text-gray-600 mt-1">
               📦 Mostrando solo pedidos activos (Pendiente a Enviado)
@@ -254,7 +267,7 @@ export default function AdminPedidos() {
                       <span className="font-medium">Fecha:</span> {formatDate(pedido.fecha_pedido)}
                     </div>
                     <div>
-                      <span className="font-medium">Total:</span> <span className="text-lg font-semibold text-gray-900">{formatPrice(pedido.total)}</span>
+                      <span className="font-medium">{t('admin.orders.total')}:</span> <span className="text-lg font-semibold text-gray-900">{formatPriceWithConversion(pedido.total, userCurrency)}</span>
                     </div>
                     <div>
                       <span className="font-medium">Entrega:</span> {pedido.tipo_entrega === 'delivery' ? '🚚 Delivery' : '🏪 Retiro en local'}

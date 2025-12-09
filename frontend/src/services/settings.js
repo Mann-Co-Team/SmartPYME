@@ -1,21 +1,40 @@
 import api from './api';
 
+/**
+ * Obtener todas las configuraciones
+ */
 export const getSettings = async () => {
-  try {
-    const response = await api.get('/settings/public/all');
-    return response.data.data || response.data;
-  } catch (error) {
-    console.error('Error obteniendo configuraciones:', error);
-    return {};
-  }
+  const response = await api.get('/settings');
+  return response.data;
 };
 
+/**
+ * Obtener configuraciones por categoría
+ */
+export const getSettingsByCategory = async (category) => {
+  const response = await api.get(`/settings/category/${category}`);
+  return response.data;
+};
+
+/**
+ * Obtener configuración específica
+ */
+export const getSetting = async (key) => {
+  const response = await api.get(`/settings/${key}`);
+  return response.data;
+};
+
+/**
+ * Actualizar configuraciones
+ */
 export const updateSettings = async (settings) => {
   const response = await api.put('/settings', settings);
   return response.data;
 };
 
-export const updateSetting = async (key, value) => {
-  const response = await api.put(`/settings/${key}`, { value });
-  return response.data;
+export default {
+  getSettings,
+  getSettingsByCategory,
+  getSetting,
+  updateSettings
 };

@@ -1,0 +1,371 @@
+import React, { useState, useEffect } from 'react';
+import { getBackups, createBackup, deleteBackup, downloadBackup, getLastBackup } from '../../services/backup';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import {
+    ArrowDownTrayIcon,
+    TrashIcon,
+    ClockIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    CloudArrowDownIcon
+} from '@heroicons/react/24/outline';
+
+const Backups = () => {
+    const [backups, setBackups] = useState([]);
+    const [lastBackup, setLastBackup] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [filter, setFilter] = useState('all'); // all, manual, automatic
+
+    useEffect(() => {
+        loadBackups();
+        loadLastBackup();
+    }, [filter]);
+
+    const loadBackups = async () => {
+        try {
+            setLoading(true);
+            const filters = {};
+            if (filter !== 'all') {
+                filters.backup_type = filter;
+            }
+            const data = await getBackups(filters);
+            setBackups(data.data || []);
+        } catch (err) {
+            console.error('Error cargando backups:', err);
+            setError('Error cargando backups');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadLastBackup = async () => {
+        try {
+            const data = await getLastBackup();
+            setLastBackup(data.data);
+        } catch (err) {
+            console.error('Error cargando último backup:', err);
+        }
+    };
+
+    const handleCreateBackup = async () => {
+        try {
+            setCreating(true);
+            setError(null);
+            setSuccess(null);
+
+            // Usar backup normal (ya incluye tenant en el nombre)
+            await createBackup(false);
+
+            setSuccess('Backup de empresa creado exitosamente');
+            loadBackups();
+            loadLastBackup();
+        } catch (err) {
+            console.error('Error creando backup:', err);
+            setError(err.message || 'Error creando backup');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const handleDownload = async (id, filename) => {
+        console.log('📥 Descargando:', { id, filename });
+        try {
+            await downloadBackup(id, filename);
+            console.log('✅ Descarga exitosa');
+            setSuccess('Backup descargado exitosamente');
+        } catch (err) {
+            console.error('❌ Error descargando backup:', err);
+            setError('Error descargando backup');
+        }
+    };
+
+
+    const handleDelete = async (id, filename) => {
+        // Primera confirmación
+        const confirmDelete = window.confirm(
+            `⚠️ ADVERTENCIA: Estás a punto de eliminar el backup:\n\n"${filename}"\n\n` +
+            `Esta acción NO se puede deshacer.\n\n` +
+            `¿Estás seguro de continuar?`
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        // Segunda confirmación con contraseña
+        const password = window.prompt(
+            '🔐 Por seguridad, ingresa tu contraseña de administrador para confirmar la eliminación:'
+        );
+
+        if (!password) {
+            setError('Eliminación cancelada');
+            return;
+        }
+
+        if (password.trim() === '') {
+            setError('Debes ingresar tu contraseña');
+            return;
+        }
+
+        try {
+            await deleteBackup(id, password);
+            setSuccess('Backup eliminado exitosamente');
+            loadBackups();
+            loadLastBackup();
+        } catch (err) {
+            console.error('Error eliminando backup:', err);
+            setError(err.message || 'Error eliminando backup. Verifica tu contraseña.');
+        }
+    };
+
+    const formatFileSize = (bytes) => {
+        if (!bytes) return 'N/A';
+        const mb = bytes / (1024 * 1024);
+        return `${mb.toFixed(2)} MB`;
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const getStatusBadge = (status) => {
+        const badges = {
+            success: {
+                bg: 'bg-green-100',
+                text: 'text-green-800',
+                icon: CheckCircleIcon,
+                label: 'Exitoso'
+            },
+            failed: {
+                bg: 'bg-red-100',
+                text: 'text-red-800',
+                icon: XCircleIcon,
+                label: 'Fallido'
+            },
+            in_progress: {
+                bg: 'bg-yellow-100',
+                text: 'text-yellow-800',
+                icon: ClockIcon,
+                label: 'En Progreso'
+            }
+        };
+
+        const badge = badges[status] || badges.in_progress;
+        const Icon = badge.icon;
+
+        return (
+            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
+                <Icon className="h-4 w-4" />
+                {badge.label}
+            </span>
+        );
+    };
+
+    const getTypeBadge = (type) => {
+        return type === 'automatic' ? (
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                Automático
+            </span>
+        ) : (
+            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
+                Manual
+            </span>
+        );
+    };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-64">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-6">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">Gestión de Backups</h1>
+                <p className="text-gray-600 mt-1">Administra las copias de seguridad de tu base de datos</p>
+            </div>
+
+            {/* Mensajes */}
+            {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
+                    <XCircleIcon className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-red-800">{error}</span>
+                </div>
+            )}
+
+            {success && (
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md flex items-start gap-2">
+                    <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-green-800">{success}</span>
+                </div>
+            )}
+
+            {/* Card de Último Backup */}
+            {lastBackup && (
+                <div className="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold text-blue-900 mb-2">Último Backup Exitoso</h3>
+                            <div className="space-y-1 text-sm text-blue-800">
+                                <p>📅 {formatDate(lastBackup.created_at)}</p>
+                                <p>📦 {formatFileSize(lastBackup.file_size)}</p>
+                                <p>📝 {lastBackup.filename}</p>
+                            </div>
+                        </div>
+                        <CloudArrowDownIcon className="h-16 w-16 text-blue-400" />
+                    </div>
+                </div>
+            )}
+
+            {/* Acciones */}
+            <div className="mb-6 flex items-center justify-between">
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'all'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Todos
+                    </button>
+                    <button
+                        onClick={() => setFilter('manual')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'manual'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Manuales
+                    </button>
+                    <button
+                        onClick={() => setFilter('automatic')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'automatic'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Automáticos
+                    </button>
+                </div>
+
+                <button
+                    onClick={handleCreateBackup}
+                    disabled={creating}
+                    className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <CloudArrowDownIcon className="h-5 w-5" />
+                    {creating ? 'Creando...' : 'Crear Backup de Empresa'}
+                </button>
+            </div>
+
+            {/* Tabla de Backups */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Fecha
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Archivo
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tamaño
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tipo
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {backups.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                                    No hay backups disponibles
+                                </td>
+                            </tr>
+                        ) : (
+                            backups.map((backup) => (
+                                <tr key={backup.id_backup} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {formatDate(backup.created_at)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <div className="max-w-xs truncate" title={backup.filename}>
+                                            {backup.filename}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {formatFileSize(backup.file_size)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {getTypeBadge(backup.backup_type)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {getStatusBadge(backup.status)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div className="flex gap-2">
+                                            {backup.status === 'success' && (
+                                                <button
+                                                    onClick={() => handleDownload(backup.id_backup, backup.filename)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Descargar"
+                                                >
+                                                    <ArrowDownTrayIcon className="h-5 w-5" />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleDelete(backup.id_backup, backup.filename);
+                                                }}
+                                                className="text-red-600 hover:text-red-900"
+                                                title="Eliminar"
+                                            >
+                                                <TrashIcon className="h-5 w-5" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Información */}
+            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 mb-2">ℹ️ Información</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Los backups se almacenan en el servidor de forma segura</li>
+                    <li>• Los backups antiguos (más de 30 días) se eliminan automáticamente</li>
+                    <li>• Puedes descargar cualquier backup exitoso</li>
+                    <li>• Los backups automáticos se ejecutan diariamente a las 2:00 AM</li>
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+export default Backups;

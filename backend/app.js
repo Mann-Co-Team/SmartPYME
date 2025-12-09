@@ -8,8 +8,8 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://tu-dominio-frontend.com'] 
+    origin: process.env.NODE_ENV === 'production'
+        ? ['https://tu-dominio-frontend.com']
         : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:3000'],
     credentials: true
 }));
@@ -22,7 +22,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Ruta de prueba principal
 app.get('/api/test', (req, res) => {
-    res.json({ 
+    res.json({
         message: 'SmartPYME API funcionando correctamente!',
         timestamp: new Date().toISOString(),
         version: '2.0.0'
@@ -66,10 +66,13 @@ try {
 }
 
 try {
-    app.use('/api/settings', require('./routes/settings.routes'));
+    const settingsRoutes = require('./routes/settings.routes');
+    console.log('🔍 DEBUG - Settings routes loaded:', typeof settingsRoutes);
+    app.use('/api/settings', settingsRoutes);
     console.log('✅ Rutas de configuraciones cargadas');
 } catch (error) {
     console.error('❌ Error cargando rutas de settings:', error.message);
+    console.error('❌ Stack:', error.stack);
 }
 
 try {
@@ -98,6 +101,13 @@ try {
     console.log('✅ Rutas de recuperación de contraseña cargadas');
 } catch (error) {
     console.error('❌ Error cargando rutas de recuperación:', error.message);
+}
+
+try {
+    app.use('/api/backup', require('./routes/backup.routes'));
+    console.log('✅ Rutas de backups cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de backups:', error.message);
 }
 
 try {
@@ -135,6 +145,21 @@ try {
     console.error('❌ Error cargando rutas de perfil:', error.message);
 }
 
+// Ruta de prueba para auditoría (sin middleware)
+try {
+    app.use('/api/auditoria-test', require('./routes/auditoria-test.routes'));
+    console.log('✅ Rutas de prueba de auditoría cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de prueba:', error.message);
+}
+
+try {
+    app.use('/api/auditoria', require('./routes/auditoria.routes'));
+    console.log('✅ Rutas de auditoría cargadas');
+} catch (error) {
+    console.error('❌ Error cargando rutas de auditoría:', error.message);
+}
+
 // Ruta de estado de la API
 app.get('/api/status', (req, res) => {
     res.json({
@@ -152,7 +177,7 @@ app.use(errors());
 // Manejo de errores
 app.use((err, req, res, next) => {
     console.error('Error en la aplicación:', err.stack);
-    
+
     // Error de Multer
     if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
@@ -160,7 +185,7 @@ app.use((err, req, res, next) => {
             message: 'El archivo es demasiado grande. Máximo 5MB permitido.'
         });
     }
-    
+
     if (err.code === 'LIMIT_UNEXPECTED_FILE') {
         return res.status(400).json({
             success: false,
@@ -168,7 +193,7 @@ app.use((err, req, res, next) => {
         });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: process.env.NODE_ENV === 'development' ? err.message : 'Algo salió mal!'
@@ -177,10 +202,10 @@ app.use((err, req, res, next) => {
 
 // Ruta no encontrada
 app.use((req, res) => {
-    res.status(404).json({ 
+    res.status(404).json({
         success: false,
         message: 'Ruta no encontrada',
-        path: req.originalUrl 
+        path: req.originalUrl
     });
 });
 

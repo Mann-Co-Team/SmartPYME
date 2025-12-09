@@ -50,7 +50,7 @@ class CategoriaController {
         try {
             const data = { ...req.body };
             const tenantId = req.tenant?.id || req.user?.tenant_id || 1;
-            
+
             // Si se subió una imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
@@ -86,6 +86,12 @@ class CategoriaController {
             const data = { ...req.body };
             const tenantId = req.tenant?.id || req.user?.tenant_id || null;
 
+            console.log('🔍 UPDATE CATEGORIA - Debug:');
+            console.log('  ID:', id);
+            console.log('  Tenant ID:', tenantId);
+            console.log('  Body data:', data);
+            console.log('  File:', req.file ? req.file.filename : 'No file uploaded');
+
             // Obtener datos actuales para manejar imagen
             const categoriaActual = await CategoriaModel.getById(id, tenantId);
             if (!categoriaActual) {
@@ -98,7 +104,8 @@ class CategoriaController {
             // Si se subió nueva imagen
             if (req.file) {
                 data.imagen = `/uploads/${req.file.filename}`;
-                
+                console.log('  ✅ Nueva imagen:', data.imagen);
+
                 // Eliminar imagen anterior si existe
                 if (categoriaActual.imagen) {
                     const oldImagePath = path.join(__dirname, '..', categoriaActual.imagen);
@@ -109,7 +116,10 @@ class CategoriaController {
             } else {
                 // Mantener imagen actual
                 data.imagen = categoriaActual.imagen;
+                console.log('  ℹ️ Manteniendo imagen actual:', data.imagen);
             }
+
+            console.log('  📤 Data final a guardar:', data);
 
             const updated = await CategoriaModel.update(id, data, tenantId);
 
@@ -120,12 +130,14 @@ class CategoriaController {
                 });
             }
 
+            console.log('  ✅ Categoría actualizada exitosamente');
+
             res.json({
                 success: true,
                 message: 'Categoría actualizada exitosamente'
             });
         } catch (error) {
-            console.error('Error actualizando categoría:', error);
+            console.error('❌ Error actualizando categoría:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor'
@@ -137,7 +149,7 @@ class CategoriaController {
         try {
             const { id } = req.params;
             const tenantId = req.tenant?.id || req.user?.tenant_id || null;
-            
+
             // Obtener datos para eliminar imagen
             const categoria = await CategoriaModel.getById(id, tenantId);
             if (!categoria) {

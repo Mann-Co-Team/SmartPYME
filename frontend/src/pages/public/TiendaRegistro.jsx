@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { EnvelopeIcon, LockClosedIcon, UserIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import DarkModeToggleStandalone from '../../components/DarkModeToggleStandalone';
 
 export default function TiendaRegistro() {
+  const { t } = useTranslation();
   const { tenant_slug } = useParams();
   const navigate = useNavigate();
   const [tenant, setTenant] = useState(null);
@@ -31,12 +35,12 @@ export default function TiendaRegistro() {
     try {
       const response = await api.get(`/tenants/slug/${tenant_slug}`);
       const tenantData = response.data.data;
-      
+
       if (!tenantData || !tenantData.activo) {
         setError('Esta tienda no está disponible');
         return;
       }
-      
+
       setTenant(tenantData);
     } catch (err) {
       setError('No se pudo cargar la tienda');
@@ -58,12 +62,12 @@ export default function TiendaRegistro() {
 
     // Validaciones
     if (!formData.nombre || !formData.apellido || !formData.email || !formData.password) {
-      toast.error('Por favor completa todos los campos obligatorios');
+      toast.error(t('auth.fillAllFields'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error(t('auth.passwordsDontMatch'));
       return;
     }
 
@@ -84,8 +88,8 @@ export default function TiendaRegistro() {
         tenant_id: tenant.id_tenant
       });
 
-      toast.success('¡Registro exitoso! Ya puedes iniciar sesión');
-      
+      toast.success(t('auth.registerSuccess'));
+
       // Redirigir al login de la tienda
       setTimeout(() => {
         navigate(`/tienda/${tenant_slug}/login`);
@@ -114,7 +118,7 @@ export default function TiendaRegistro() {
         <div className="text-center p-8">
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Error</h3>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
           >
@@ -128,12 +132,18 @@ export default function TiendaRegistro() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
+        {/* Switchers */}
+        <div className="flex justify-end gap-2 mb-4">
+          <LanguageSwitcher />
+          <DarkModeToggleStandalone />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {tenant?.nombre_empresa}
           </h2>
-          <p className="text-gray-600">Crear cuenta de cliente</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('auth.registerSubtitle')}</p>
         </div>
 
         {/* Formulario */}
@@ -325,15 +335,15 @@ export default function TiendaRegistro() {
           {/* Links */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-gray-600">
-              ¿Ya tienes cuenta?{' '}
-              <Link 
+              {t('auth.hasAccount')}{' '}
+              <Link
                 to={`/tienda/${tenant_slug}/login`}
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                Inicia sesión aquí
+                {t('auth.loginHere')}
               </Link>
             </p>
-            <Link 
+            <Link
               to={`/tienda/${tenant_slug}`}
               className="block text-sm text-gray-600 hover:text-gray-700"
             >

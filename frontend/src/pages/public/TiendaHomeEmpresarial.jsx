@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useSettings } from '../../context/SettingsContext';
+import { formatCurrency } from '../../utils/currency';
+import { useTranslation } from 'react-i18next';
+import { formatPriceWithConversion } from '../../utils/currencyConverter';
 import { ShoppingCartIcon, UserIcon, UserCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import DarkModeToggle from '../../components/DarkModeToggle';
+import LanguageCurrencySwitcher from '../../components/LanguageCurrencySwitcher';
 import CartSidebar from '../../components/Cart/CartSidebar';
 import { isAuthenticated, getCurrentUser, logout } from '../../services/auth';
 
 const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { addItem, toggleCart, getItemCount } = useCart();
+  const { settings } = useSettings();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,18 +30,18 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
 
   const slides = [
     {
-      title: 'Tecnología Premium',
-      subtitle: 'Los últimos dispositivos y gadgets tecnológicos con la mejor calidad y garantía',
+      title: t('store.enterprise.carousel.slide1Title'),
+      subtitle: t('store.enterprise.carousel.slide1Subtitle'),
       image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200'
     },
     {
-      title: 'Ofertas Exclusivas en Gaming',
-      subtitle: 'PlayStation, Xbox y los mejores accesorios para tu experiencia gaming',
+      title: t('store.enterprise.carousel.slide2Title'),
+      subtitle: t('store.enterprise.carousel.slide2Subtitle'),
       image: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=1200'
     },
     {
-      title: 'Audio de Alta Fidelidad',
-      subtitle: 'Auriculares y sistemas de sonido de las mejores marcas del mundo',
+      title: t('store.enterprise.carousel.slide3Title'),
+      subtitle: t('store.enterprise.carousel.slide3Subtitle'),
       image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=1200'
     }
   ];
@@ -60,11 +67,20 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(price);
+    const userCurrency = localStorage.getItem('userCurrency') || 'CLP';
+    return formatPriceWithConversion(price, userCurrency);
   };
+
+  // Escuchar cambios de moneda
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      // Forzar re-render cuando cambia la moneda
+      setViewMode(prev => prev);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+  }, []);
 
   const handleAddToCart = (producto) => {
     addItem(producto);
@@ -84,7 +100,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
     // Filtrar por búsqueda
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(p => 
+      result = result.filter(p =>
         p.nombre.toLowerCase().includes(term) ||
         p.descripcion?.toLowerCase().includes(term) ||
         p.categoria?.toLowerCase().includes(term)
@@ -141,7 +157,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                 </svg>
                 <span>Plan Empresarial</span>
               </span>
-              
+
               {/* Búsqueda Premium en Navbar */}
               <div className="hidden lg:block flex-1 max-w-xl ml-8">
                 <div className="relative">
@@ -152,7 +168,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   </div>
                   <input
                     type="text"
-                    placeholder="🔍 Búsqueda inteligente premium..."
+                    placeholder={`🔍 ${t('store.enterprise.filters.search')}`}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2 border-2 border-amber-300 dark:border-amber-700 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
@@ -170,15 +186,16 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-8">
-              <a href="#inicio" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Inicio</a>
-              <a href="#contacto" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Contacto</a>
-              <a href="#ubicacion" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">Ubicación</a>
-              
+              <a href="#inicio" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">{t('store.navigation.home')}</a>
+              <a href="#contacto" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">{t('store.navigation.contact')}</a>
+              <a href="#ubicacion" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">{t('store.navigation.location')}</a>
+
               <div className="flex items-center space-x-4">
+                <LanguageCurrencySwitcher />
                 <DarkModeToggle />
-                <button 
+                <button
                   onClick={toggleCart}
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white relative"
                 >
@@ -199,7 +216,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                       <span>{currentUser.nombre}</span>
                       <ChevronDownIcon className="h-4 w-4" />
                     </button>
-                    
+
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                         <button
@@ -209,7 +226,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                           }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          👤 Mi Perfil
+                          👤 {t('store.user.myProfile')}
                         </button>
                         <button
                           onClick={() => {
@@ -218,14 +235,14 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                           }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          📦 Mis Pedidos
+                          📦 {t('store.user.myOrders')}
                         </button>
                         <hr className="my-1 border-gray-200 dark:border-gray-700" />
                         <button
                           onClick={handleLogout}
                           className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          🚪 Cerrar Sesión
+                          🚪 {t('store.user.logout')}
                         </button>
                       </div>
                     )}
@@ -235,7 +252,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                     onClick={() => navigate(`/tienda/${tenant.slug}/login`)}
                     className="border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-gray-300 px-6 py-2 rounded-md hover:bg-gray-900 dark:hover:bg-gray-700 hover:text-white transition-colors font-medium"
                   >
-                    Registro / Iniciar Sesión
+                    {t('store.user.loginRegister')}
                   </button>
                 )}
                 <button
@@ -243,7 +260,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm border border-gray-300 dark:border-gray-600 px-3 py-2 rounded"
                   title="Acceso para administradores y empleados"
                 >
-                  👔 Admin
+                  👔 {t('store.user.admin')}
                 </button>
               </div>
             </div>
@@ -256,9 +273,8 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
             style={{
               backgroundImage: `url(${slide.image})`,
               backgroundSize: 'cover',
@@ -275,9 +291,9 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
             </div>
           </div>
         ))}
-        
+
         {/* Navegación del carrusel */}
-        <button 
+        <button
           onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 transition-colors shadow-lg"
         >
@@ -285,7 +301,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <button 
+        <button
           onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
           className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 transition-colors shadow-lg"
         >
@@ -293,16 +309,15 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        
+
         {/* Indicadores */}
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
-              }`}
+              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+                }`}
             />
           ))}
         </div>
@@ -318,38 +333,38 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
               <div className="border-b-2 border-amber-200 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">👑</span>
-                  <h3 className="font-bold text-lg text-amber-900">Filtros Premium</h3>
+                  <h3 className="font-bold text-lg text-amber-900">{t('store.enterprise.filters.premiumFilters')}</h3>
                 </div>
                 <p className="text-xs text-amber-700">
-                  Sistema de búsqueda avanzada exclusivo del Plan Empresarial
+                  {t('store.enterprise.filters.advancedSearchSystem')}
                 </p>
               </div>
 
               {/* Búsqueda móvil */}
               <div className="lg:hidden">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  🔍 Buscar
+                  🔍 {t('store.enterprise.filters.searchLabel')}
                 </label>
                 <input
                   type="text"
-                  placeholder="Buscar productos..."
+                  placeholder={t('store.enterprise.filters.search')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-3 py-2 border-2 border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
                 />
               </div>
-              
+
               {/* Filtro por Categorías */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  📂 Categorías
+                  📂 {t('store.enterprise.filters.categories')}
                 </label>
                 <select
                   value={selectedCategoria}
                   onChange={(e) => setSelectedCategoria(e.target.value)}
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
                 >
-                  <option value="">Todas las categorías</option>
+                  <option value="">{t('store.enterprise.filters.allCategories')}</option>
                   {categorias.map((categoria) => (
                     <option key={categoria.id_categoria} value={categoria.id_categoria}>
                       {categoria.nombre}
@@ -361,19 +376,19 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
               {/* Filtro por Rango de Precio */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  💰 Rango de Precio
+                  💰 {t('store.enterprise.filters.priceRange')}
                 </label>
                 <div className="space-y-2">
                   <input
                     type="number"
-                    placeholder="Mínimo"
+                    placeholder={t('store.enterprise.filters.min')}
                     value={priceRange.min}
                     onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
                   />
                   <input
                     type="number"
-                    placeholder="Máximo"
+                    placeholder={t('store.enterprise.filters.max')}
                     value={priceRange.max}
                     onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
@@ -385,14 +400,14 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
               <div className="bg-amber-100 border-2 border-amber-300 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-amber-900">
-                    Resultados
+                    {t('store.enterprise.filters.results')}
                   </span>
                   <span className="text-lg font-bold text-amber-900">
                     {filteredProductos.length}
                   </span>
                 </div>
                 <p className="text-xs text-amber-700 mt-1">
-                  de {productos.length} productos totales
+                  {t('store.enterprise.filters.of')} {productos.length} {t('store.enterprise.filters.totalProducts')}
                 </p>
               </div>
 
@@ -409,13 +424,13 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Limpiar Filtros
+                  {t('store.enterprise.filters.clearFilters')}
                 </button>
               )}
 
               {/* Categorías expandibles (visual) */}
               <div className="border-t-2 border-amber-200 pt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Explorar por Categoría</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('store.enterprise.filters.exploreByCategory')}</h4>
                 <div className="space-y-1">
                   {categorias.map((categoria) => {
                     const count = productos.filter(p => p.id_categoria === categoria.id_categoria).length;
@@ -423,11 +438,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                       <button
                         key={categoria.id_categoria}
                         onClick={() => setSelectedCategoria(categoria.id_categoria.toString())}
-                        className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
-                          selectedCategoria === categoria.id_categoria.toString()
-                            ? 'bg-amber-200 text-amber-900 font-semibold'
-                            : 'hover:bg-gray-100 text-gray-700'
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${selectedCategoria === categoria.id_categoria.toString()
+                          ? 'bg-amber-200 text-amber-900 font-semibold'
+                          : 'hover:bg-gray-100 text-gray-700'
+                          }`}
                       >
                         <div className="flex justify-between items-center">
                           <span>{categoria.nombre}</span>
@@ -454,31 +468,31 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-3xl font-bold mb-4 text-amber-900">✨ Características Empresariales Premium</h2>
+                  <h2 className="text-3xl font-bold mb-4 text-amber-900">✨ {t('store.enterprise.features.premiumFeatures')}</h2>
                   <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>Productos ilimitados</span>
+                      <span>{t('store.enterprise.features.unlimitedProducts')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>Pedidos ilimitados</span>
+                      <span>{t('store.enterprise.features.unlimitedOrders')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>Empleados ilimitados</span>
+                      <span>{t('store.enterprise.features.unlimitedEmployees')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>Soporte 24/7</span>
+                      <span>{t('store.enterprise.features.prioritySupport')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>50 GB Almacenamiento</span>
+                      <span>{t('store.enterprise.features.storage50GB')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-green-600 font-bold">✓</span>
-                      <span>API Personalizada</span>
+                      <span>{t('store.enterprise.features.customAPI')}</span>
                     </div>
                   </div>
                 </div>
@@ -487,8 +501,8 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
 
             {/* Encabezado de Categorías */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-8">Encabezado de categorías</h2>
-              
+              <h2 className="text-3xl font-bold mb-8">{t('store.enterprise.sections.categoriesHeader')}</h2>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {categorias.slice(0, 3).map((categoria, index) => {
                   const categoryImages = [
@@ -497,26 +511,27 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                     'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600'
                   ];
                   return (
-                  <div 
-                    key={categoria.id_categoria}
-                    className="group cursor-pointer"
-                  >
-                    <div className="relative h-64 rounded-lg overflow-hidden mb-4">
-                      <img 
-                        src={categoryImages[index % categoryImages.length]} 
-                        alt={categoria.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/70 transition-all" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-white text-xl font-bold mb-1">{categoria.nombre}</h3>
-                        <p className="text-white/90 text-sm">
-                          Tecnología de última generación
-                        </p>
+                    <div
+                      key={categoria.id_categoria}
+                      className="group cursor-pointer"
+                    >
+                      <div className="relative h-64 rounded-lg overflow-hidden mb-4">
+                        <img
+                          src={categoryImages[index % categoryImages.length]}
+                          alt={categoria.nombre}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/70 transition-all" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <h3 className="text-white text-xl font-bold mb-1">{categoria.nombre}</h3>
+                          <p className="text-white/90 text-sm">
+                            {t('store.enterprise.sections.latestTechnology')}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )})}
+                  )
+                })}
               </div>
             </section>
 
@@ -526,8 +541,8 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                 <div>
                   <h2 className="text-3xl font-bold">
                     {searchTerm || selectedCategoria || priceRange.min || priceRange.max
-                      ? 'Resultados de Búsqueda'
-                      : 'Catálogo Completo'}
+                      ? t('store.enterprise.sections.searchResults')
+                      : t('store.enterprise.sections.completeCatalog')}
                   </h2>
                   <div className="flex items-center space-x-4 mt-2">
                     <span className="text-sm font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">
@@ -543,11 +558,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   <div className="flex items-center bg-white border-2 border-amber-300 rounded-lg overflow-hidden">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${
-                        viewMode === 'grid' 
-                          ? 'bg-amber-500 text-white' 
-                          : 'text-gray-600 hover:bg-amber-50'
-                      }`}
+                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${viewMode === 'grid'
+                        ? 'bg-amber-500 text-white'
+                        : 'text-gray-600 hover:bg-amber-50'
+                        }`}
                       title="Vista de cuadrícula"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -556,11 +570,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${
-                        viewMode === 'list' 
-                          ? 'bg-amber-500 text-white' 
-                          : 'text-gray-600 hover:bg-amber-50'
-                      }`}
+                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${viewMode === 'list'
+                        ? 'bg-amber-500 text-white'
+                        : 'text-gray-600 hover:bg-amber-50'
+                        }`}
                       title="Vista de lista"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -569,11 +582,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                     </button>
                     <button
                       onClick={() => setViewMode('compact')}
-                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${
-                        viewMode === 'compact' 
-                          ? 'bg-amber-500 text-white' 
-                          : 'text-gray-600 hover:bg-amber-50'
-                      }`}
+                      className={`px-3 py-2 flex items-center gap-1 transition-colors ${viewMode === 'compact'
+                        ? 'bg-amber-500 text-white'
+                        : 'text-gray-600 hover:bg-amber-50'
+                        }`}
                       title="Vista compacta"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -582,7 +594,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                     </button>
                   </div>
 
-                  <select 
+                  <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="flex-1 md:flex-none border-2 border-amber-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-medium"
@@ -621,41 +633,41 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                   {viewMode === 'grid' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredProductos.map(producto => (
-                    <div key={producto.id_producto} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all group">
-                      <div className="relative h-64 bg-gray-50 overflow-hidden">
-                      {producto.imagen ? (
-                        <img 
-                          src={producto.imagen} 
-                          alt={producto.nombre} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-5xl">📦</span>
-                      )}
-                      <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                        ⭐ PREMIUM
-                      </div>
-                      <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
-                        🚀 Envío Prioritario
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-bold text-lg mb-2">{producto.nombre}</h3>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{producto.descripcion}</p>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-2xl font-bold text-gray-900">{formatPrice(producto.precio)}</span>
-                        {producto.stock && (
-                          <span className="text-sm text-gray-500">Stock: {producto.stock}</span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleAddToCart(producto)}
-                        className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-3 rounded-md hover:from-amber-600 hover:to-yellow-700 transition-all font-bold shadow-lg transform hover:scale-105"
-                      >
-                        ⭐ Añadir al carrito Premium
-                      </button>
+                        <div key={producto.id_producto} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all group">
+                          <div className="relative h-64 bg-gray-50 overflow-hidden">
+                            {producto.imagen ? (
+                              <img
+                                src={producto.imagen}
+                                alt={producto.nombre}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-5xl">📦</span>
+                            )}
+                            <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                              ⭐ PREMIUM
+                            </div>
+                            <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
+                              🚀 Envío Prioritario
+                            </div>
+                          </div>
+                          <div className="p-5">
+                            <h3 className="font-bold text-lg mb-2">{producto.nombre}</h3>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{producto.descripcion}</p>
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-2xl font-bold text-gray-900">{formatPrice(producto.precio)}</span>
+                              {producto.stock && (
+                                <span className="text-sm text-gray-500">Stock: {producto.stock}</span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleAddToCart(producto)}
+                              className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-3 rounded-md hover:from-amber-600 hover:to-yellow-700 transition-all font-bold shadow-lg transform hover:scale-105"
+                            >
+                              ⭐ Añadir al carrito Premium
+                            </button>
+                          </div>
                         </div>
-                      </div>
                       ))}
                     </div>
                   )}
@@ -668,10 +680,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                           {/* Imagen */}
                           <div className="relative w-48 h-48 flex-shrink-0 bg-gray-100">
                             {producto.imagen ? (
-                              <img 
-                                src={producto.imagen} 
-                                alt={producto.nombre} 
-                                className="w-full h-full object-cover" 
+                              <img
+                                src={producto.imagen}
+                                alt={producto.nombre}
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -712,7 +724,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                               </div>
                             </div>
                             <div className="mt-4">
-                              <button 
+                              <button
                                 onClick={() => handleAddToCart(producto)}
                                 className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-3 rounded-md hover:from-amber-600 hover:to-yellow-700 transition-all font-bold shadow-lg"
                               >
@@ -733,10 +745,10 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                           {/* Imagen compacta */}
                           <div className="relative w-24 h-24 flex-shrink-0 bg-gray-100">
                             {producto.imagen ? (
-                              <img 
-                                src={producto.imagen} 
-                                alt={producto.nombre} 
-                                className="w-full h-full object-cover" 
+                              <img
+                                src={producto.imagen}
+                                alt={producto.nombre}
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -752,7 +764,7 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
                               <p className="text-xs text-gray-500 mb-1">{producto.categoria}</p>
                               <p className="text-lg font-bold text-amber-600">{formatPrice(producto.precio)}</p>
                             </div>
-                            <button 
+                            <button
                               onClick={() => handleAddToCart(producto)}
                               className="mt-2 w-full bg-amber-500 hover:bg-amber-600 text-white py-1.5 rounded text-xs font-bold transition-colors"
                             >
@@ -796,9 +808,9 @@ const TiendaHomeEmpresarial = ({ tenant, categorias, productos }) => {
             <div>
               <h4 className="font-bold text-lg mb-4">Newsletter</h4>
               <p className="text-gray-400 text-sm mb-4">Suscríbete para recibir ofertas</p>
-              <input 
-                type="email" 
-                placeholder="Tu email" 
+              <input
+                type="email"
+                placeholder="Tu email"
                 className="w-full px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

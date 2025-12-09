@@ -49,12 +49,13 @@ class CategoriaModel {
     static async create(data, tenantId = 1) {
         try {
             const [result] = await db.execute(`
-                INSERT INTO categorias (id_tenant, nombre, descripcion, activo)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO categorias (id_tenant, nombre, descripcion, imagen, activo)
+                VALUES (?, ?, ?, ?, ?)
             `, [
                 tenantId,
                 data.nombre,
                 data.descripcion || null,
+                data.imagen || null,
                 data.activo !== undefined ? data.activo : true
             ]);
             return result.insertId;
@@ -65,21 +66,25 @@ class CategoriaModel {
 
     static async update(id, data, tenantId = null) {
         try {
+            // Asegurar que activo tenga un valor válido
+            const activo = data.activo !== undefined ? (data.activo ? 1 : 0) : 1;
+
             const query = tenantId
                 ? `UPDATE categorias 
-                   SET nombre = ?, descripcion = ?, activo = ?
+                   SET nombre = ?, descripcion = ?, imagen = ?, activo = ?
                    WHERE id_categoria = ? AND id_tenant = ?`
                 : `UPDATE categorias 
-                   SET nombre = ?, descripcion = ?, activo = ?
+                   SET nombre = ?, descripcion = ?, imagen = ?, activo = ?
                    WHERE id_categoria = ?`;
-            
+
             const params = tenantId
-                ? [data.nombre, data.descripcion, data.activo, id, tenantId]
-                : [data.nombre, data.descripcion, data.activo, id];
-            
+                ? [data.nombre, data.descripcion || null, data.imagen || null, activo, id, tenantId]
+                : [data.nombre, data.descripcion || null, data.imagen || null, activo, id];
+
             const [result] = await db.execute(query, params);
             return result.affectedRows > 0;
         } catch (error) {
+            console.error('Error en CategoriaModel.update:', error);
             throw error;
         }
     }
@@ -90,7 +95,7 @@ class CategoriaModel {
             const checkQuery = tenantId
                 ? 'SELECT COUNT(*) as count FROM productos WHERE id_categoria = ? AND id_tenant = ?'
                 : 'SELECT COUNT(*) as count FROM productos WHERE id_categoria = ?';
-            
+
             const checkParams = tenantId ? [id, tenantId] : [id];
             const [products] = await db.execute(checkQuery, checkParams);
 
@@ -101,7 +106,7 @@ class CategoriaModel {
             const deleteQuery = tenantId
                 ? `DELETE FROM categorias WHERE id_categoria = ? AND id_tenant = ?`
                 : `DELETE FROM categorias WHERE id_categoria = ?`;
-            
+
             const deleteParams = tenantId ? [id, tenantId] : [id];
             const [result] = await db.execute(deleteQuery, deleteParams);
             return result.affectedRows > 0;
@@ -119,7 +124,7 @@ class CategoriaModel {
                 : `UPDATE categorias 
                    SET activo = NOT activo 
                    WHERE id_categoria = ?`;
-            
+
             const params = tenantId ? [id, tenantId] : [id];
             const [result] = await db.execute(query, params);
             return result.affectedRows > 0;

@@ -1,96 +1,99 @@
 // src/pages/Home.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ShoppingBag, TrendingUp, Shield, Zap, Users, BarChart3, Smartphone, Globe } from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
+import LanguageCurrencySwitcher from '../components/LanguageCurrencySwitcher';
 
 export default function Home() {
+  const { t } = useTranslation();
   const features = [
     {
       icon: <ShoppingBag className="w-8 h-8" />,
-      title: "Tienda Online",
-      description: "Crea tu tienda en línea profesional en minutos, sin conocimientos técnicos"
+      title: t('landing.features.onlineStore'),
+      description: t('landing.features.onlineStoreDesc')
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
-      title: "Gestión Inteligente",
-      description: "Control total de productos, inventario y pedidos desde un solo lugar"
+      title: t('landing.features.smartManagement'),
+      description: t('landing.features.smartManagementDesc')
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: "Pagos Seguros",
-      description: "Integración con PayPal y métodos de pago confiables"
+      title: t('landing.features.securePayments'),
+      description: t('landing.features.securePaymentsDesc')
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: "Rápido y Eficiente",
-      description: "Tecnología optimizada para velocidad y rendimiento excepcional"
+      title: t('landing.features.fastEfficient'),
+      description: t('landing.features.fastEfficientDesc')
     },
     {
       icon: <Users className="w-8 h-8" />,
-      title: "Multi-Usuario",
-      description: "Sistema de roles y permisos para gestionar tu equipo"
+      title: t('landing.features.multiUser'),
+      description: t('landing.features.multiUserDesc')
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
-      title: "Reportes en Tiempo Real",
-      description: "Analíticas y métricas para tomar mejores decisiones"
+      title: t('landing.features.realtimeReports'),
+      description: t('landing.features.realtimeReportsDesc')
     },
     {
       icon: <Smartphone className="w-8 h-8" />,
-      title: "Responsive Design",
-      description: "Perfecto en todos los dispositivos: móvil, tablet y desktop"
+      title: t('landing.features.responsiveDesign'),
+      description: t('landing.features.responsiveDesignDesc')
     },
     {
       icon: <Globe className="w-8 h-8" />,
-      title: "Multi-Tenant",
-      description: "Cada negocio con su propia tienda personalizada"
+      title: t('landing.features.multiTenant'),
+      description: t('landing.features.multiTenantDesc')
     }
   ];
 
   const plans = [
     {
-      name: "Básico",
-      price: "Gratis",
-      description: "Perfecto para empezar",
+      name: t('landing.pricing.basic.name'),
+      price: t('landing.pricing.basic.price'),
+      description: t('landing.pricing.basic.description'),
       features: [
-        "Hasta 10 productos",
-        "1 categoría",
-        "Pagos con PayPal",
-        "Diseño básico",
-        "Soporte por email"
+        t('landing.pricing.basic.feature1'),
+        t('landing.pricing.basic.feature2'),
+        t('landing.pricing.basic.feature3'),
+        t('landing.pricing.basic.feature4'),
+        t('landing.pricing.basic.feature5')
       ],
       color: "from-blue-500 to-blue-600",
       buttonColor: "bg-blue-500 hover:bg-blue-600"
     },
     {
-      name: "Profesional",
-      price: "$29/mes",
-      description: "Para negocios en crecimiento",
+      name: t('landing.pricing.professional.name'),
+      price: t('landing.pricing.professional.price'),
+      description: t('landing.pricing.professional.description'),
       features: [
-        "Hasta 100 productos",
-        "5 categorías",
-        "Múltiples métodos de pago",
-        "Diseño profesional",
-        "Reportes avanzados",
-        "Soporte prioritario"
+        t('landing.pricing.professional.feature1'),
+        t('landing.pricing.professional.feature2'),
+        t('landing.pricing.professional.feature3'),
+        t('landing.pricing.professional.feature4'),
+        t('landing.pricing.professional.feature5'),
+        t('landing.pricing.professional.feature6')
       ],
       color: "from-purple-500 to-purple-600",
       buttonColor: "bg-purple-500 hover:bg-purple-600",
       featured: true
     },
     {
-      name: "Empresarial",
-      price: "$99/mes",
-      description: "Para empresas establecidas",
+      name: t('landing.pricing.enterprise.name'),
+      price: t('landing.pricing.enterprise.price'),
+      description: t('landing.pricing.enterprise.description'),
       features: [
-        "Productos ilimitados",
-        "Categorías ilimitadas",
-        "Todos los métodos de pago",
-        "Diseño premium personalizado",
-        "IA y analíticas avanzadas",
-        "Multi-usuario",
-        "Soporte 24/7"
+        t('landing.pricing.enterprise.feature1'),
+        t('landing.pricing.enterprise.feature2'),
+        t('landing.pricing.enterprise.feature3'),
+        t('landing.pricing.enterprise.feature4'),
+        t('landing.pricing.enterprise.feature5'),
+        t('landing.pricing.enterprise.feature6'),
+        t('landing.pricing.enterprise.feature7')
       ],
       color: "from-amber-500 to-amber-600",
       buttonColor: "bg-amber-500 hover:bg-amber-600"
@@ -111,14 +114,15 @@ export default function Home() {
                 SmartPYME
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
+              <LanguageCurrencySwitcher />
               <DarkModeToggle />
               <Link to="/login" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-                Iniciar Sesión
+                {t('landing.nav.login')}
               </Link>
               <Link to="/admin/login" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all">
-                Panel Admin
+                {t('landing.nav.adminPanel')}
               </Link>
             </div>
           </div>
@@ -130,19 +134,19 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-              Tu Tienda Online
+              {t('landing.hero.title1')}
               <br />
-              en Minutos
+              {t('landing.hero.title2')}
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-              La plataforma todo-en-uno para crear, gestionar y hacer crecer tu negocio digital. Simple, poderoso y profesional.
+              {t('landing.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login" className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
-                Comenzar Gratis
+                {t('landing.hero.startFree')}
               </Link>
               <a href="#features" className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-lg hover:border-purple-500 dark:hover:border-purple-500 transition-all">
-                Ver Características
+                {t('landing.hero.viewFeatures')}
               </a>
             </div>
           </div>
@@ -161,16 +165,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Todo lo que Necesitas
+              {t('landing.features.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Herramientas profesionales para llevar tu negocio al siguiente nivel
+              {t('landing.features.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 group"
               >
@@ -194,38 +198,37 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Planes para Cada Negocio
+              {t('landing.pricing.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Comienza gratis y crece con tu negocio
+              {t('landing.pricing.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <div 
+              <div
                 key={index}
-                className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden ${
-                  plan.featured ? 'ring-2 ring-purple-500 dark:ring-purple-400 scale-105' : ''
-                }`}
+                className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden ${plan.featured ? 'ring-2 ring-purple-500 dark:ring-purple-400 scale-105' : ''
+                  }`}
               >
                 {plan.featured && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-bl-xl text-sm font-semibold">
-                    Popular
+                    {t('landing.pricing.popular')}
                   </div>
                 )}
-                
+
                 <div className="p-8">
                   <div className={`inline-block px-4 py-2 bg-gradient-to-r ${plan.color} rounded-xl mb-4`}>
                     <h3 className="text-2xl font-bold text-white">{plan.name}</h3>
                   </div>
-                  
+
                   <div className="mb-4">
                     <span className="text-4xl font-bold text-gray-900 dark:text-white">{plan.price}</span>
                   </div>
-                  
+
                   <p className="text-gray-600 dark:text-gray-400 mb-6">{plan.description}</p>
-                  
+
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, fIndex) => (
                       <li key={fIndex} className="flex items-start text-gray-700 dark:text-gray-300">
@@ -236,9 +239,9 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  
+
                   <button className={`w-full py-3 px-6 ${plan.buttonColor} text-white rounded-xl font-semibold transition-all transform hover:scale-105`}>
-                    Seleccionar Plan
+                    {t('landing.pricing.selectPlan')}
                   </button>
                 </div>
               </div>
@@ -251,13 +254,13 @@ export default function Home() {
       <section className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 dark:from-blue-900 dark:via-purple-900 dark:to-pink-900 transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            ¿Listo para Comenzar?
+            {t('landing.cta.title')}
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Únete a miles de negocios que ya confían en SmartPYME
+            {t('landing.cta.subtitle')}
           </p>
           <Link to="/login" className="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-semibold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-xl">
-            Crear Mi Tienda Gratis
+            {t('landing.cta.createStore')}
           </Link>
         </div>
       </section>
@@ -274,40 +277,40 @@ export default function Home() {
                 <span className="text-xl font-bold">SmartPYME</span>
               </div>
               <p className="text-gray-400">
-                La plataforma de e-commerce inteligente para PyMEs
+                {t('landing.footer.tagline')}
               </p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold mb-4">Producto</h4>
+              <h4 className="font-semibold mb-4">{t('landing.footer.product')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Características</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Precios</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Casos de Éxito</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.features')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.pricing')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.successStories')}</a></li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold mb-4">Empresa</h4>
+              <h4 className="font-semibold mb-4">{t('landing.footer.company')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Sobre Nosotros</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contacto</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.aboutUs')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.blog')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.contact')}</a></li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h4 className="font-semibold mb-4">{t('landing.footer.legal')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Términos</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacidad</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.terms')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.privacy')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.cookies')}</a></li>
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 SmartPYME. Todos los derechos reservados.</p>
+            <p>&copy; 2025 SmartPYME. {t('landing.footer.copyright')}.</p>
           </div>
         </div>
       </footer>

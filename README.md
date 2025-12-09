@@ -54,6 +54,9 @@ Sistema de gestión integral para PYMEs con arquitectura **multitenant**.
 ## 🚀 Instalación
 
 ### Prerrequisitos
+
+> 📋 **Para ver la lista completa de requisitos y dependencias, consulta [REQUIREMENTS.md](REQUIREMENTS.md)**
+
 - Node.js 18+ y npm
 - MySQL 8.0+
 - Git
@@ -197,6 +200,30 @@ SmartPYME/
 └── database/
     └── schema.sql             # Esquema de BD completo
 ```
+
+---
+
+## 📚 Documentación
+
+La documentación del proyecto está organizada en la carpeta `docs/`. Consulta el [índice completo de documentación](docs/README.md) para más detalles.
+
+### Documentación por Categoría
+
+- **[Arquitectura](docs/arquitectura/)** - Sistema de autenticación, multitenant, permisos, carritos
+- **[Guías](docs/guias/)** - Inicio rápido, credenciales, guía de carritos y pedidos, diferencias entre planes
+- **[Pruebas](docs/pruebas/)** - Guías de pruebas, pruebas completadas, pruebas manuales
+- **[Requisitos](docs/requisitos/)** - RF-1 a RF-10 completamente documentados
+- **[Base de Datos](docs/database/)** - Schema, seeds, guía de migración
+- **[Backend](docs/backend/)** - Setup de admin, correcciones, verificador de stock
+- **[Notas](docs/notas/)** - Notas técnicas y correcciones
+
+### Inicio Rápido
+
+Para comenzar rápidamente:
+1. **[Inicio Rápido](docs/guias/INICIO-RAPIDO.md)** - Guía de inicio
+2. **[Credenciales de Login](docs/guias/CREDENCIALES_LOGIN.md)** - Acceso a las tiendas demo
+3. **[Sistema Completo](docs/arquitectura/SISTEMA-COMPLETO.md)** - Arquitectura del sistema
+
 
 ---
 

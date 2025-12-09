@@ -1,7 +1,7 @@
 const rolePermissions = {
     'admin': [
         'manage_users',
-        'manage_products', 
+        'manage_products',
         'manage_orders',
         'manage_categories',
         'view_dashboard',
@@ -9,7 +9,8 @@ const rolePermissions = {
         'manage_settings',
         'delete_products',
         'delete_orders',
-        'manage_notifications'
+        'manage_notifications',
+        'manage_backups'
     ],
     'empleado': [
         'manage_products',
@@ -30,9 +31,9 @@ const rolePermissions = {
 const authorize = (permission) => {
     return (req, res, next) => {
         if (!req.user) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
-                message: 'No autenticado' 
+                message: 'No autenticado'
             });
         }
 

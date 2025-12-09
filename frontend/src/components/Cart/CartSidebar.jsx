@@ -1,21 +1,32 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
+import { formatPriceWithConversion } from '../../utils/currencyConverter';
 
 const CartSidebar = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { items, isOpen, setIsOpen, updateQuantity, removeItem, getTotal, currentTenant } = useCart();
   const { settings } = useTheme();
+  const [, forceUpdate] = useState();
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(price);
+    const userCurrency = localStorage.getItem('userCurrency') || 'CLP';
+    return formatPriceWithConversion(price, userCurrency);
   };
+
+  // Escuchar cambios de moneda
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      forceUpdate({});
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+  }, []);
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -50,7 +61,7 @@ const CartSidebar = () => {
                     <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
                       <div className="flex items-start justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
                         <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                          🛒 Carrito de compras
+                          🛒 {t('store.cart.title')}
                         </Dialog.Title>
                         <div className="ml-3 flex h-7 items-center">
                           <button
@@ -68,8 +79,8 @@ const CartSidebar = () => {
                         {items.length === 0 ? (
                           <div className="text-center py-12">
                             <div className="text-6xl mb-4">🛒</div>
-                            <p className="text-gray-500 dark:text-gray-400 text-lg">Tu carrito está vacío</p>
-                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">¡Agrega productos para empezar!</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('store.cart.empty')}</p>
+                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">{t('store.cart.emptySubtitle')}</p>
                           </div>
                         ) : (
                           <div className="flow-root">
@@ -103,10 +114,10 @@ const CartSidebar = () => {
                                         </button>
                                       </div>
                                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        {formatPrice(item.precio)} c/u
+                                        {formatPrice(item.precio)} {t('store.cart.each')}
                                       </p>
                                     </div>
-                                    
+
                                     <div className="flex items-center justify-between mt-2">
                                       <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                                         <button
@@ -144,22 +155,22 @@ const CartSidebar = () => {
                       <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-4 py-6 sm:px-6">
                         <div className="space-y-2 mb-4">
                           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                            <span>Subtotal ({items.reduce((acc, item) => acc + item.quantity, 0)} {items.reduce((acc, item) => acc + item.quantity, 0) === 1 ? 'producto' : 'productos'})</span>
+                            <span>{t('store.cart.subtotal')} ({items.reduce((acc, item) => acc + item.quantity, 0)} {items.reduce((acc, item) => acc + item.quantity, 0) === 1 ? t('store.cart.product') : t('store.cart.products')})</span>
                             <span>{formatPrice(getTotal())}</span>
                           </div>
                           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                            <span>Envío</span>
-                            <span className="text-green-600 dark:text-green-400 font-medium">Calculado en checkout</span>
+                            <span>{t('store.cart.shipping')}</span>
+                            <span className="text-green-600 dark:text-green-400 font-medium">{t('store.cart.shippingCalculated')}</span>
                           </div>
                         </div>
-                        
+
                         <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white border-t border-gray-300 dark:border-gray-600 pt-4">
-                          <span>Total</span>
+                          <span>{t('store.cart.total')}</span>
                           <span>{formatPrice(getTotal())}</span>
                         </div>
-                        
+
                         <div className="mt-6">
-                          <button 
+                          <button
                             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2"
                             onClick={() => {
                               setIsOpen(false);
@@ -170,7 +181,7 @@ const CartSidebar = () => {
                               }
                             }}
                           >
-                            <span>Proceder al pago</span>
+                            <span>{t('store.cart.checkout')}</span>
                             <span>→</span>
                           </button>
                         </div>
@@ -180,7 +191,7 @@ const CartSidebar = () => {
                             className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
                             onClick={() => setIsOpen(false)}
                           >
-                            ← Continuar comprando
+                            ← {t('store.cart.continueShopping')}
                           </button>
                         </div>
                       </div>

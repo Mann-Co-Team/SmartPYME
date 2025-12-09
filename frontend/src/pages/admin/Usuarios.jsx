@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    getUsuarios, 
-    getRoles, 
-    createUsuario, 
-    updateUsuario, 
-    toggleActiveUsuario, 
-    deleteUsuario 
+import { useTranslation } from 'react-i18next';
+import {
+    getUsuarios,
+    getRoles,
+    createUsuario,
+    updateUsuario,
+    toggleActiveUsuario,
+    deleteUsuario
 } from '../../services/usuarios';
 import { verifyPassword } from '../../services/auth';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { 
-    PlusIcon, 
-    PencilIcon, 
+import {
+    PlusIcon,
+    PencilIcon,
     TrashIcon,
     XMarkIcon,
     CheckCircleIcon,
@@ -20,6 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Usuarios = () => {
+    const { t } = useTranslation();
     const [usuarios, setUsuarios] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ const Usuarios = () => {
     const [tenantInfo, setTenantInfo] = useState(null);
     const [deletePassword, setDeletePassword] = useState('');
     const [deletingInProgress, setDeletingInProgress] = useState(false);
+    const [roleFilter, setRoleFilter] = useState('all'); // 'all', 'staff', 'clients'
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -145,10 +148,10 @@ const Usuarios = () => {
 
             if (editingUsuario) {
                 await updateUsuario(editingUsuario.id_usuario, dataToSend);
-                setSuccess('Usuario actualizado exitosamente');
+                setSuccess(t('admin.users.updatedSuccess'));
             } else {
                 await createUsuario(dataToSend);
-                setSuccess('Usuario creado exitosamente');
+                setSuccess(t('admin.users.createdSuccess'));
             }
 
             handleCloseModal();
@@ -180,7 +183,7 @@ const Usuarios = () => {
 
     const handleDelete = async (e) => {
         e.preventDefault();
-        
+
         if (!deletePassword) {
             setError('Debes ingresar tu contraseña para confirmar');
             return;
@@ -195,7 +198,7 @@ const Usuarios = () => {
 
             // Si la contraseña es correcta, eliminar usuario
             await deleteUsuario(deletingUsuario.id_usuario);
-            setSuccess('Usuario eliminado exitosamente');
+            setSuccess(t('admin.users.deletedSuccess'));
             setShowDeleteConfirm(false);
             setDeletingUsuario(null);
             setDeletePassword('');
@@ -214,7 +217,7 @@ const Usuarios = () => {
     };
 
     const getRolColor = (nombreRol) => {
-        switch(nombreRol.toLowerCase()) {
+        switch (nombreRol.toLowerCase()) {
             case 'admin':
                 return 'bg-purple-100 text-purple-800';
             case 'empleado':
@@ -239,9 +242,9 @@ const Usuarios = () => {
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
                 <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('admin.users.title')}</h1>
                     <p className="text-gray-600 mt-1">Administra usuarios y asigna roles</p>
-                    
+
                     {/* Indicador de Plan */}
                     {tenantInfo && (
                         <div className="mt-4 inline-flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
@@ -266,7 +269,7 @@ const Usuarios = () => {
                         </div>
                     )}
                 </div>
-                
+
                 <div>
                     {canAddMoreUsers() ? (
                         <button
@@ -309,6 +312,48 @@ const Usuarios = () => {
                 </div>
             )}
 
+            {/* Tabs de Filtro por Rol */}
+            <div className="mb-4 border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                    <button
+                        onClick={() => setRoleFilter('all')}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm ${roleFilter === 'all'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Todos
+                        <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                            {usuarios.length}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => setRoleFilter('staff')}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm ${roleFilter === 'staff'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Admin y Empleados
+                        <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-blue-100 text-blue-600">
+                            {usuarios.filter(u => u.id_rol === 1 || u.id_rol === 2).length}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => setRoleFilter('clients')}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm ${roleFilter === 'clients'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Clientes
+                        <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-green-100 text-green-600">
+                            {usuarios.filter(u => u.id_rol === 3).length}
+                        </span>
+                    </button>
+                </nav>
+            </div>
+
             {/* Tabla de usuarios */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -335,65 +380,76 @@ const Usuarios = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {usuarios.length === 0 ? (
+                        {usuarios
+                            .filter(u => {
+                                if (roleFilter === 'staff') return u.id_rol === 1 || u.id_rol === 2;
+                                if (roleFilter === 'clients') return u.id_rol === 3;
+                                return true; // 'all'
+                            })
+                            .length === 0 ? (
                             <tr>
                                 <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                                    No hay usuarios registrados
+                                    No hay usuarios en esta categoría
                                 </td>
                             </tr>
                         ) : (
-                            usuarios.map((usuario) => (
-                                <tr key={usuario.id_usuario} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {usuario.nombre} {usuario.apellido}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{usuario.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
-                                            {usuario.telefono || '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRolColor(usuario.nombre_rol)}`}>
-                                            {usuario.nombre_rol}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <button
-                                            onClick={() => handleToggleActive(usuario)}
-                                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                usuario.activo
+                            usuarios
+                                .filter(u => {
+                                    if (roleFilter === 'staff') return u.id_rol === 1 || u.id_rol === 2;
+                                    if (roleFilter === 'clients') return u.id_rol === 3;
+                                    return true; // 'all'
+                                })
+                                .map((usuario) => (
+                                    <tr key={usuario.id_usuario} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {usuario.nombre} {usuario.apellido}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{usuario.email}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">
+                                                {usuario.telefono || '-'}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRolColor(usuario.nombre_rol)}`}>
+                                                {usuario.nombre_rol}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <button
+                                                onClick={() => handleToggleActive(usuario)}
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.activo
                                                     ? 'bg-green-100 text-green-800 hover:bg-green-200'
                                                     : 'bg-red-100 text-red-800 hover:bg-red-200'
-                                            }`}
-                                        >
-                                            {usuario.activo ? 'Activo' : 'Inactivo'}
-                                        </button>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleOpenModal(usuario)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                                title="Editar"
+                                                    }`}
                                             >
-                                                <PencilIcon className="h-5 w-5" />
+                                                {usuario.activo ? 'Activo' : 'Inactivo'}
                                             </button>
-                                            <button
-                                                onClick={() => handleOpenDeleteConfirm(usuario)}
-                                                className="text-red-600 hover:text-red-900"
-                                                title="Eliminar"
-                                            >
-                                                <TrashIcon className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleOpenModal(usuario)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Editar"
+                                                >
+                                                    <PencilIcon className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenDeleteConfirm(usuario)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                    title="Eliminar"
+                                                >
+                                                    <TrashIcon className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
                         )}
                     </tbody>
                 </table>
@@ -425,7 +481,7 @@ const Usuarios = () => {
                                         <input
                                             type="text"
                                             value={formData.nombre}
-                                            onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
                                         />
@@ -438,7 +494,7 @@ const Usuarios = () => {
                                         <input
                                             type="text"
                                             value={formData.apellido}
-                                            onChange={(e) => setFormData({...formData, apellido: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
                                         />
@@ -451,7 +507,7 @@ const Usuarios = () => {
                                         <input
                                             type="email"
                                             value={formData.email}
-                                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
                                         />
@@ -464,7 +520,7 @@ const Usuarios = () => {
                                         <input
                                             type="password"
                                             value={formData.password}
-                                            onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required={!editingUsuario}
                                             minLength="6"
@@ -481,7 +537,7 @@ const Usuarios = () => {
                                         <input
                                             type="tel"
                                             value={formData.telefono}
-                                            onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
@@ -492,7 +548,7 @@ const Usuarios = () => {
                                         </label>
                                         <select
                                             value={formData.id_rol}
-                                            onChange={(e) => setFormData({...formData, id_rol: parseInt(e.target.value)})}
+                                            onChange={(e) => setFormData({ ...formData, id_rol: parseInt(e.target.value) })}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
                                         >
@@ -537,7 +593,7 @@ const Usuarios = () => {
                             </div>
                             <h2 className="text-xl font-bold text-gray-900">Confirmar Eliminación</h2>
                         </div>
-                        
+
                         <p className="text-gray-600 mb-4">
                             ¿Estás seguro de que deseas eliminar al usuario{' '}
                             <span className="font-semibold">
