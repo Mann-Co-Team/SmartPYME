@@ -1,14 +1,15 @@
 // Generar informe de backup
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 
 async function generateBackupReport(backupId, tenantId) {
     const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: 'Rocketn3m3s1s.',
-        database: 'smartpyme_db'
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME || 'smartpyme_db'
     });
 
     try {

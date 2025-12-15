@@ -1,5 +1,6 @@
 // Script de Restauración SEGURA de Backups
 // Enfoque de 2 pasos: Test DB → Producción
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -29,9 +30,9 @@ async function restoreToTestDatabase(backupFilePath, tenantId) {
         let connection;
         try {
             connection = await mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: 'Rocketn3m3s1s.'
+                host: process.env.DB_HOST || 'localhost',
+                user: process.env.DB_USER || 'root',
+                password: process.env.DB_PASSWORD
             });
             console.log('✅ Conexión a MySQL establecida');
         } catch (connError) {
@@ -65,9 +66,10 @@ async function restoreToTestDatabase(backupFilePath, tenantId) {
 
         // Restaurar backup en BD de prueba
         console.log('⚡ Restaurando backup en BD de prueba...');
-        const restoreCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -u root "-pRocketn3m3s1s." "${testDbName}" < "${backupFilePath}"`;
+        const dbPassword = process.env.DB_PASSWORD;
+        const restoreCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -u root "-p${dbPassword}" "${testDbName}" < "${backupFilePath}"`;
 
-        console.log('📝 Comando:', restoreCommand.replace('Rocketn3m3s1s.', '***'));
+        console.log('📝 Comando:', restoreCommand.replace(dbPassword, '***'));
 
         try {
             execSync(restoreCommand, {
@@ -87,9 +89,9 @@ async function restoreToTestDatabase(backupFilePath, tenantId) {
         let verifyConnection;
         try {
             verifyConnection = await mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: 'Rocketn3m3s1s.',
+                host: process.env.DB_HOST || 'localhost',
+                user: process.env.DB_USER || 'root',
+                password: process.env.DB_PASSWORD,
                 database: testDbName
             });
 
@@ -138,9 +140,9 @@ async function promoteTestToProduction(tenantId, userId) {
 
     try {
         const connection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'Rocketn3m3s1s.'
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD
         });
 
         // Verificar que BD de prueba existe
@@ -153,14 +155,15 @@ async function promoteTestToProduction(tenantId, userId) {
             throw new Error('Base de datos de prueba no existe. Primero debes restaurar a prueba.');
         }
 
-        console.log('📦 Creando backup de producción actual...');
+        console.log('📬 Creando backup de producción actual...');
 
         // Crear backup de la BD de producción actual con nombre descriptivo
         const backupDir = path.join(__dirname, '../../database/backups');
         const backupFile = path.join(backupDir, `restauracion-backup-seguridad_${timestamp}.sql`);
 
         // IMPORTANTE: Usar comillas correctas para Windows y --skip-definer para vistas
-        const backupCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe" -u root "-pRocketn3m3s1s." --single-transaction --skip-lock-tables --skip-definer "${prodDbName}" > "${backupFile}"`;
+        const dbPassword = process.env.DB_PASSWORD;
+        const backupCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe" -u root "-p${dbPassword}" --single-transaction --skip-lock-tables --skip-definer "${prodDbName}" > "${backupFile}"`;
 
         console.log('📝 Ejecutando backup de seguridad...');
 
@@ -189,10 +192,10 @@ async function promoteTestToProduction(tenantId, userId) {
         }
 
         // Crear dump de la BD de prueba
-        console.log('📦 Creando dump de BD de prueba...');
+        console.log('📬 Creando dump de BD de prueba...');
         const testDumpFile = path.join(backupDir, `temp_restauracion_${timestamp}.sql`);
 
-        const testDumpCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe" -u root "-pRocketn3m3s1s." --single-transaction --skip-lock-tables --skip-definer "${testDbName}" > "${testDumpFile}"`;
+        const testDumpCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe" -u root "-p${dbPassword}" --single-transaction --skip-lock-tables --skip-definer "${testDbName}" > "${testDumpFile}"`;
 
         try {
             execSync(testDumpCommand, {
@@ -248,7 +251,7 @@ async function promoteTestToProduction(tenantId, userId) {
 
         // Restaurar dump en producción
         console.log('⚡ Restaurando datos en producción...');
-        const restoreCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -u root "-pRocketn3m3s1s." "${prodDbName}" < "${testDumpFile}"`;
+        const restoreCommand = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -u root "-p${dbPassword}" "${prodDbName}" < "${testDumpFile}"`;
 
         try {
             execSync(restoreCommand, {
@@ -272,9 +275,9 @@ async function promoteTestToProduction(tenantId, userId) {
 
         // Eliminar BD de prueba
         const cleanupConnection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'Rocketn3m3s1s.'
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD
         });
 
         try {
@@ -309,9 +312,9 @@ async function deleteTestDatabase() {
 
     try {
         const connection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'Rocketn3m3s1s.'
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD
         });
 
         await connection.query('DROP DATABASE IF EXISTS smartpyme_db_test');

@@ -1,13 +1,14 @@
 // Script de Backup de Base de Datos - SIN COMPRESIÓN
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const { execSync } = require('child_process');
 
-// Configuración
-const DB_NAME = 'smartpyme_db';
-const DB_USER = 'root';
-const DB_PASSWORD = 'Rocketn3m3s1s.';
+// Configuración desde variables de entorno
+const DB_NAME = process.env.DB_NAME || 'smartpyme_db';
+const DB_USER = process.env.DB_USER || 'root';
+const DB_PASSWORD = process.env.DB_PASSWORD;
 const BACKUP_DIR = path.join(__dirname, '..', '..', 'database', 'backups');
 const RETENTION_DAYS = 30;
 

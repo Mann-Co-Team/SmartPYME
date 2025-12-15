@@ -72,6 +72,11 @@ web_modules/
 .env.*
 !.env.example
 
+# Database backups - NUNCA commitear por seguridad
+database/backups/*.sql
+database/backups/*.zip
+database/backups/*.gz
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
